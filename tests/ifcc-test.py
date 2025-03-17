@@ -15,7 +15,6 @@
 #
 
 import argparse
-import glob
 import os
 import shutil
 import sys
@@ -140,9 +139,8 @@ for inputfilename in inputfilenames:
         exit(1)
     
     ## each test-case gets copied and processed in its own subdirectory:
-    ## ../somedir/subdir/file.c becomes ./ifcc-test-output/somedir-subdir-file/input.c
-    subdir='ifcc-test-output/'+inputfilename.strip("./")[:-2].replace('/','-')
-    os.mkdir(subdir)
+    subdir='ifcc-test-output/'+inputfilename.strip("./")[:-2]
+    os.makedirs(subdir, exist_ok=True)
     shutil.copyfile(inputfilename, subdir+'/input.c')
     jobs.append(subdir)
 
@@ -155,6 +153,7 @@ for j in jobs:
     else:
         unique_jobs.append(j)
 jobs=sorted(unique_jobs)
+print(unique_jobs)
 # debug: after deduplication
 if args.debug:
     print("debug: list of test-cases after deduplication:"," ".join(jobs))
