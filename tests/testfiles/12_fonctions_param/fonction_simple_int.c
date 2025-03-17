@@ -5,5 +5,5 @@ int test() {
 int main() {
     int a;
     a = test();
-    return 0;
+    return a;
 }
