@@ -1,6 +1,8 @@
 int main() {
-    int a,b;
+    int a,b,c,d;
     a = -!12;
     b = !-12;
-    return a+b;
+    c = -!0;
+    d = !-0;
+    return a+b+c+d;
 }
