@@ -1,5 +1,6 @@
 int main() {
-    int a;
+    int a,b;
     a = 45 / 15 % 2;
-    return a;
+    b = 45 % 15 / 2;
+    return a+b;
 }

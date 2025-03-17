@@ -1,5 +1,6 @@
 int main() {
-    int a;
+    int a,b;
     a = 12 & 15 ^ 4;
-    return a;
+    b = 12 ^ 15 & 4;
+    return a+b;
 }
