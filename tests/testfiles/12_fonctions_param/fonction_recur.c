@@ -1,10 +1,13 @@
 int test(int a) {
-    return 2*a;
+    if (a == 0) {
+        return 42;
+    }
+    return test(a-1);
 }
 
 int main() {
     int a;
-    a = 5;
+    a = 10;
     a = test(a);
     return a;
 }
