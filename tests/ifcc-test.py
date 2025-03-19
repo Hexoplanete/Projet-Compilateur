@@ -60,6 +60,8 @@ argparser.add_argument('-v','--verbose',action="count",default=0,
                        help='Increase verbosity level. You can use this option multiple times.')
 argparser.add_argument('-w','--wrapper',metavar='PATH',
                        help='Invoke your compiler through the shell script at PATH. (default: `ifcc-wrapper.sh`)')
+argparser.add_argument('-f','--failonly',action="count",default=0,
+                       help='Only print the test-cases that failed. (default: print all test-cases)')
 
 args=argparser.parse_args()
 
@@ -154,7 +156,7 @@ for j in jobs:
     else:
         unique_jobs.append(j)
 jobs=sorted(unique_jobs)
-print(unique_jobs)
+
 # debug: after deduplication
 if args.debug:
     print("debug: list of test-cases after deduplication:"," ".join(jobs))
@@ -191,7 +193,7 @@ for jobname in jobs:
     if gccstatus != 0 and ifccstatus != 0:
         ## ifcc correctly rejects invalid program -> test-case ok
         print("TEST OK\r\n") if args.verbose else None 
-        data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[32mOK\033[0m",gccstatus,ifccstatus, ""])
+        data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[32mOK\033[0m",gccstatus,ifccstatus, ""]) if not args.failonly else None
         nb_success+=1
         continue
     elif gccstatus != 0 and ifccstatus == 0:
@@ -240,7 +242,7 @@ for jobname in jobs:
 
     ## last but not least
     print("TEST OK\r\n") if args.verbose else None
-    data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[32mOK\033[0m", exegccstatus, exeifccstatus,""])
+    data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[32mOK\033[0m", exegccstatus, exeifccstatus,""]) if not args.failonly else None
     nb_success+=1
 
 table = tabulate(
@@ -250,4 +252,4 @@ table = tabulate(
 )
 
 print(table)
-print("SUMMARY: "+str(nb_success)+" tests passed, "+str(nb_failure)+" tests failed"+ str(nb_jobs)+" tests total")
+print("SUMMARY: "+str(nb_success)+" tests passed, "+str(nb_failure)+" tests failed, "+ str(nb_jobs)+" tests total")
