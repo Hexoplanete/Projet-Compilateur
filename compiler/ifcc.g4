@@ -6,8 +6,6 @@ prog: 'int' 'main' '(' ')' '{' stmt* stmt_jump '}';
 
 stmt: stmt_declaration | stmt_expression | stmt_jump;
 
-// TODO : faire la génération de code pour le 'int a = b = 42'
-
 // TODO : quand on aura + de types
 stmt_declaration: TYPE declaration (',' declaration)* ';';
 declaration: IDENTIFIER ('=' expression)?;
@@ -27,7 +25,6 @@ stmt_jump: RETURN expression? ';' # stmt_jump_return;
 
 
 // TODO : Implémenter les caractères
-// TODO : Implémenter le modulo
 // TODO : Implémenter les opérateurs de comparaison
 
 OP_MULT: [*/%];
