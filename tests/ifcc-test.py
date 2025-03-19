@@ -250,4 +250,4 @@ table = tabulate(
 )
 
 print(table)
-print("SUMMARY: "+str(nb_success)+" tests passed, "+str(nb_failure)+" tests failed")
+print("SUMMARY: "+str(nb_success)+" tests passed, "+str(nb_failure)+" tests failed"+ str(nb_jobs)+" tests total")
