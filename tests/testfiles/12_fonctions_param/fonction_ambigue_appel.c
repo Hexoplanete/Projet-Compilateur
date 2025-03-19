@@ -1,10 +1,10 @@
-int test+2(int a) {
-    return 2*a;
+int test+2() {
+    return 2;
 }
 
 int main() {
-    int a;
-    a = 10;
-    a = test+2();
+    int test;
+    test = 10;
+    test = test+2();
     return a;
 }
