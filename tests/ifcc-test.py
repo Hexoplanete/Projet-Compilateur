@@ -130,6 +130,7 @@ if args.debug:
         
 ######################################################################################
 ## PREPARE step: copy all test-cases under ifcc-test-output
+print("Preparing test cases...")
 
 jobs=[]
 
@@ -164,14 +165,31 @@ if args.debug:
 
 ######################################################################################
 ## TEST step: actually compile all test-cases with both compilers
+print("Running test cases...")
 
 nb_success=0
 nb_failure=0
 nb_jobs=len(jobs)
 # Now we make a table with columns test path and test result, with color
 data = []
+x = 0
+color_dict = {"red": "\033[91m",
+		"green": "\033[92m",
+		"yellow": "\033[93m",
+		"na": ""
+		}
+reset_color = "\033[0m"
+reset_cursor = "\033[1000D"
+bar_length = 50
+
 
 for jobname in jobs:
+    width = int((x+1)/(len(jobs)/bar_length))
+    bar = "[" + color_dict["green"] + "#" * width + " " * (bar_length - width) + reset_color + "]" + " " + str(x+1) + "/" + str(len(jobs))
+    sys.stdout.write(reset_cursor + bar)
+    sys.stdout.flush()
+    x += 1
+
     os.chdir(orig_cwd)
 
     print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1]) if args.verbose else None
@@ -245,11 +263,13 @@ for jobname in jobs:
     data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[32mOK\033[0m", exegccstatus, exeifccstatus,""]) if not args.failonly else None
     nb_success+=1
 
+
 table = tabulate(
     data, 
     headers=["Test Path", "Result", "gcc", "ifcc", "Comment"], 
     tablefmt="grid"
 )
-
+print()
 print(table)
 print("SUMMARY: "+str(nb_success)+" tests passed, "+str(nb_failure)+" tests failed, "+ str(nb_jobs)+" tests total")
+
