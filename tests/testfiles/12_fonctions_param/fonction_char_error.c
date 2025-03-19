@@ -1,7 +1,7 @@
-int int() {
+int char() {
     return 2;
 }
 
 int main() {
-    return int();
+    return char();
 }
