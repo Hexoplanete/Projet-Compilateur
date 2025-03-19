@@ -4,3 +4,4 @@ compiler/build/
 compiler/generated/
 compiler/ifcc
 tests/ifcc-test-output
+.DS_Store
