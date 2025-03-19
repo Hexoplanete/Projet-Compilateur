@@ -1,5 +1,6 @@
 int main() {
-    int a,b,c;
-    a=b=c=42;
+    int a = 1,b,c=5;
+    b = 12;
+    a = b = c = 42;
     return b;
 }
