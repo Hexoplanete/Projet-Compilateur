@@ -19,6 +19,7 @@ import os
 import shutil
 import sys
 import subprocess
+from tabulate import tabulate
 
 def command(string, logfile=None):
     """execute `string` as a shell command, optionnaly logging stdout+stderr to a file. return exit status.)"""
@@ -165,11 +166,13 @@ if args.debug:
 nb_success=0
 nb_failure=0
 nb_jobs=len(jobs)
+# Now we make a table with columns test path and test result, with color
+data = []
 
 for jobname in jobs:
     os.chdir(orig_cwd)
 
-    #print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1])
+    print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1]) if args.verbose else None
     os.chdir(jobname)
     
     ## Reference compiler = GCC
@@ -187,19 +190,22 @@ for jobname in jobs:
     
     if gccstatus != 0 and ifccstatus != 0:
         ## ifcc correctly rejects invalid program -> test-case ok
-        print("TEST OK\r\n") if args.verbose else None
+        print("TEST OK\r\n") if args.verbose else None 
+        data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[32mOK\033[0m",gccstatus,ifccstatus, ""])
         nb_success+=1
         continue
     elif gccstatus != 0 and ifccstatus == 0:
         ## ifcc wrongly accepts invalid program -> error
-        print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1])
-        print("TEST FAIL (your compiler accepts an invalid program)\r\n")
+        print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1]) if args.verbose else None
+        print("TEST FAIL (your compiler accepts an invalid program)\r\n") if args.verbose else None
+        data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[31mFAIL\033[0m", gccstatus, ifccstatus,"your compiler accepts an invalid program"])
         nb_failure+=1
         continue
     elif gccstatus == 0 and ifccstatus != 0:
         ## ifcc wrongly rejects valid program -> error
-        print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1])
-        print("TEST FAIL (your compiler rejects a valid program)\r\n")
+        print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1]) if args.verbose else None
+        print("TEST FAIL (your compiler rejects a valid program)\r\n") if args.verbose else None
+        data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[31mFAIL\033[0m", gccstatus, ifccstatus, "your compiler rejects a valid program"])
         nb_failure+=1
         if args.verbose:
             dumpfile("ifcc-compile.txt")
@@ -208,8 +214,9 @@ for jobname in jobs:
         ## ifcc accepts to compile valid program -> let's link it
         ldstatus=command("gcc -o exe-ifcc asm-ifcc.s", "ifcc-link.txt")
         if ldstatus:
-            print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1])
-            print("TEST FAIL (your compiler produces incorrect assembly)\r\n")
+            print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1]) if args.verbose else None
+            print("TEST FAIL (your compiler produces incorrect assembly)\r\n") if args.verbose else None
+            data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[31mFAIL\033[0m", 0, ldstatus,"your compiler produces incorrect assembly"])
             nb_failure+=1
             if args.verbose:
                 dumpfile("ifcc-link.txt")
@@ -218,10 +225,11 @@ for jobname in jobs:
     ## both compilers  did produce an  executable, so now we  run both
     ## these executables and compare the results.
         
-    command("./exe-ifcc","ifcc-execute.txt")
+    exeifccstatus = command("./exe-ifcc","ifcc-execute.txt")
     if open("gcc-execute.txt").read() != open("ifcc-execute.txt").read() :
-        print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1])
-        print("TEST FAIL (different results at execution)\r\n")
+        print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1]) if args.verbose else None
+        print("TEST FAIL (different results at execution)\r\n") if args.verbose else None
+        data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[31mFAIL\033[0m", exegccstatus, exeifccstatus,"different results at execution"])
         nb_failure+=1
         if args.verbose:
             print("GCC:")
@@ -232,6 +240,14 @@ for jobname in jobs:
 
     ## last but not least
     print("TEST OK\r\n") if args.verbose else None
+    data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[32mOK\033[0m", exegccstatus, exeifccstatus,""])
     nb_success+=1
 
+table = tabulate(
+    data, 
+    headers=["Test Path", "Result", "gcc", "ifcc", "Comment"], 
+    tablefmt="grid"
+)
+
+print(table)
 print("SUMMARY: "+str(nb_success)+" tests passed, "+str(nb_failure)+" tests failed")
