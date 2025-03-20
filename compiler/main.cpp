@@ -49,9 +49,13 @@ int main(int argn, const char** argv)
         exit(1);
     }
 
+    // First step of compilation : the SymbolMapVisitor parses the AST to establish the table,
+    // which will associate variable names to memory addresses
     SymbolMapVisitor symbolsVisitor;
     symbolsVisitor.visit(tree);
 
+    // Second step of compilation : the CodeGenVisitor parses the AST once again and, with the
+    // help of the symbol table, generates assembly code corresponding to the tree
     CodeGenVisitor generatorVisitor(symbolsVisitor.getSymbolMap());
     generatorVisitor.visit(tree);
 
