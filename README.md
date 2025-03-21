@@ -27,17 +27,17 @@ La récupération des symboles intermédiaires est faite grâce au visiteur Code
 #-#=#-#=#-#=#-#=#-#=#-#=#-# STRUCTURE DES TESTS #-#=#-#=#-#=#-#=#-#=#-#=#-#
 
 Les tests ont été regroupés par thèmes dans le dossier testfiles conformément au sujet du projet. On a donc :
-0_invalid_c_prog
-1-8_expressions
-9_random_decl_var
-10_affectations
-11_fonctions_std_IO
-12_fonctions_param
-14_structure_blocs
-17_return_anywhere
-18_verif_var_decl
-19_verif_var_decl_once
-20_verif_var_decl_used
+    0_invalid_c_prog
+    1-8_expressions
+    9_random_decl_var
+    10_affectations
+    11_fonctions_std_IO
+    12_fonctions_param
+    14_structure_blocs
+    17_return_anywhere
+    18_verif_var_decl
+    19_verif_var_decl_once
+    20_verif_var_decl_used
 
 non_regression : chaque fois qu'on ajoute une fonctionnalité, cela ne doit pas casser ce qui a déjà été fait
 
