@@ -45,7 +45,11 @@ non_regression : chaque fois qu'on ajoute une fonctionnalité, cela ne doit pas 
 
 #-#=#-#=#-#=#-#=#-#=#-#=#-# STRUCTURE DU CODE #-#=#-#=#-#=#-#=#-#=#-#=#-#
 
+Dans le dossier compiler, on fait make.
+cd compiler && make
 
+Pour supprimer tous les fichiers générés
+cd compiler && make clean
 
 
 
