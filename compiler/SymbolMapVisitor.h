@@ -25,7 +25,8 @@ public:
     virtual antlrcpp::Any visitExpr_arithmetic_bit_and(ifccParser::Expr_arithmetic_bit_andContext* ctx) override;
     virtual antlrcpp::Any visitExpr_arithmetic_bit_xor(ifccParser::Expr_arithmetic_bit_xorContext* ctx) override;
     virtual antlrcpp::Any visitExpr_arithmetic_bit_or(ifccParser::Expr_arithmetic_bit_orContext* ctx) override;
-
+    virtual antlrcpp::Any visitExpr_compare(ifccParser::Expr_compareContext* ctx) override;
+    virtual antlrcpp::Any visitExpr_equal(ifccParser::Expr_equalContext* ctx) override;
 
     inline std::map<std::string, int>& getSymbolMap() { return _symbolMap; }
     void addVariable(std::string name, int size, bool used = false);

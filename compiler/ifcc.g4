@@ -21,6 +21,8 @@ expression:
 	| expression '&' expression		# expr_arithmetic_bit_and
 	| expression '^' expression		# expr_arithmetic_bit_xor
 	| expression '|' expression		# expr_arithmetic_bit_or
+	| expression OP_COMP expression	# expr_compare	
+	| expression OP_EQ expression	# expr_equal
 	| IDENTIFIER '=' expression		# expr_assign;
 
 stmt_jump: RETURN expression? ';' # stmt_jump_return;
@@ -33,6 +35,8 @@ stmt_jump: RETURN expression? ';' # stmt_jump_return;
 OP_MULT: [*/%];
 OP_ADD: [+-];
 OP_OR: '!';
+OP_COMP: '<' | '>';
+OP_EQ: '==' | '!=';
 TYPE: 'int';
 RETURN: 'return';                   // VARNAME must be after TYPE and RETURN, to avoid rule conflicts.
 IDENTIFIER: [a-zA-Z_][a-zA-Z_0-9]*;    // ex : 'int' must be evaluated as a TYPE to avoid it being evaluated

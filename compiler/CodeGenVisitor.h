@@ -19,6 +19,8 @@ public:
     virtual antlrcpp::Any visitExpr_arithmetic_bit_and(ifccParser::Expr_arithmetic_bit_andContext* ctx) override;
     virtual antlrcpp::Any visitExpr_arithmetic_bit_xor(ifccParser::Expr_arithmetic_bit_xorContext* ctx) override;
     virtual antlrcpp::Any visitExpr_arithmetic_bit_or(ifccParser::Expr_arithmetic_bit_orContext* ctx) override;
+    virtual antlrcpp::Any visitExpr_compare(ifccParser::Expr_compareContext* ctx) override;
+    virtual antlrcpp::Any visitExpr_equal(ifccParser::Expr_equalContext* ctx) override;
     
     virtual antlrcpp::Any visitExpr_ident(ifccParser::Expr_identContext* ctx) override;
     virtual antlrcpp::Any visitExpr_const(ifccParser::Expr_constContext* ctx) override;

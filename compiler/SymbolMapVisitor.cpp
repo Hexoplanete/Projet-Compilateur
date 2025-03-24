@@ -129,6 +129,34 @@ antlrcpp::Any SymbolMapVisitor::visitExpr_arithmetic_bit_or(ifccParser::Expr_ari
 }
 
 /*
+    - Creates a temporary variable '@tmpX' in the symbol table, used later during assembly code generation
+    - Visits both left and right expressions to add their own variables to the symbol table
+*/
+antlrcpp::Any SymbolMapVisitor::visitExpr_compare(ifccParser::Expr_compareContext* ctx)
+{
+    addVariable("@tmp" + std::to_string(_tmpCount), 4, true); // TODO Use the actual size of the variable instead of 4
+    _tmpCount++;
+
+    visit(ctx->expression(0));
+    visit(ctx->expression(1));
+    return 0;
+}
+
+/*
+    - Creates a temporary variable '@tmpX' in the symbol table, used later during assembly code generation
+    - Visits both left and right expressions to add their own variables to the symbol table
+*/
+antlrcpp::Any SymbolMapVisitor::visitExpr_equal(ifccParser::Expr_equalContext* ctx)
+{
+    addVariable("@tmp" + std::to_string(_tmpCount), 4, true); // TODO Use the actual size of the variable instead of 4
+    _tmpCount++;
+
+    visit(ctx->expression(0));
+    visit(ctx->expression(1));
+    return 0;
+}
+
+/*
     - Extracts the variable name from the 'VARNAME' symbol
     - If the variable name is not in the symbol table, the variable is used while not defined : throws an error
     - Otherwise, marks the variable as used
