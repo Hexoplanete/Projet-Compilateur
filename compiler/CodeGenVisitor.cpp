@@ -160,6 +160,72 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_mult(ifccParser::Expr_arithme
 }
 
 /*
+    - Visits the 'expression' on the left side of the arithmetic expresssion to copy its value into eax
+    - Creates a new temporary variable '@tmpX' and adds it to the symbol map (and then increases _tmpCount)
+    - Copies the left expression value (inside eax) to this temporary variable in order to free eax
+
+    - Visits the 'expression' on the right side of the arithmetic expression to copy its value into eax
+    
+    - Places the result of 'left & right' into the temporary variable
+    - Copies the result from the temporary variable to eax
+*/
+antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_bit_and(ifccParser::Expr_arithmetic_bit_andContext* ctx)
+{
+    visit(ctx->expression(0));
+    int tmpAddress = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
+    std::cout << "\tmovl\t%eax, " << tmpAddress << "(%rbp)\n";
+    visit(ctx->expression(1));
+    
+    std::cout << "\tandl\t%eax, " << tmpAddress << "(%rbp)\n";
+    std::cout << "\tmovl\t" << tmpAddress << "(%rbp), %eax\n";
+    return 0;
+}
+
+/*
+    - Visits the 'expression' on the left side of the arithmetic expresssion to copy its value into eax
+    - Creates a new temporary variable '@tmpX' and adds it to the symbol map (and then increases _tmpCount)
+    - Copies the left expression value (inside eax) to this temporary variable in order to free eax
+
+    - Visits the 'expression' on the right side of the arithmetic expression to copy its value into eax
+    
+    - Places the result of 'left ^ right' into the temporary variable
+    - Copies the result from the temporary variable to eax
+*/
+antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_bit_xor(ifccParser::Expr_arithmetic_bit_xorContext* ctx)
+{
+    visit(ctx->expression(0));
+    int tmpAddress = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
+    std::cout << "\tmovl\t%eax, " << tmpAddress << "(%rbp)\n";
+    visit(ctx->expression(1));
+    
+    std::cout << "\txorl\t%eax, " << tmpAddress << "(%rbp)\n";
+    std::cout << "\tmovl\t" << tmpAddress << "(%rbp), %eax\n";
+    return 0;
+}
+
+/*
+    - Visits the 'expression' on the left side of the arithmetic expresssion to copy its value into eax
+    - Creates a new temporary variable '@tmpX' and adds it to the symbol map (and then increases _tmpCount)
+    - Copies the left expression value (inside eax) to this temporary variable in order to free eax
+
+    - Visits the 'expression' on the right side of the arithmetic expression to copy its value into eax
+    
+    - Places the result of 'left | right' into the temporary variable
+    - Copies the result from the temporary variable to eax
+*/
+antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_bit_or(ifccParser::Expr_arithmetic_bit_orContext* ctx)
+{
+    visit(ctx->expression(0));
+    int tmpAddress = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
+    std::cout << "\tmovl\t%eax, " << tmpAddress << "(%rbp)\n";
+    visit(ctx->expression(1));
+    
+    std::cout << "\torl\t%eax, " << tmpAddress << "(%rbp)\n";
+    std::cout << "\tmovl\t" << tmpAddress << "(%rbp), %eax\n";
+    return 0;
+}
+
+/*
     - Visits the 'expression' that will be assigned to an IDENTIFIER, to copy its value into eax
     - Fetches from the symbol table the address of the variable corresponding to the IDENTIFIER
     - Copies the value of the expression (inside eax) to the memory address of the variable
