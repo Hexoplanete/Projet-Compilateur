@@ -5,7 +5,7 @@ int main() {
     c = 7;
 
     a = a == b;
-    a = b << c;
+    a = b <> c;
 
     return a;
 }

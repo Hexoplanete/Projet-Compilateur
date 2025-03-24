@@ -3,7 +3,7 @@ int main() {
     a = 10;
     b = 3;
 
-    a = a << b;
+    a = a <> b;
 
     return a;
 }
