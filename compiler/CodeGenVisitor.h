@@ -13,6 +13,9 @@ public:
     virtual antlrcpp::Any visitDeclaration(ifccParser::DeclarationContext* ctx) override;
     virtual antlrcpp::Any visitExpr_assign(ifccParser::Expr_assignContext* ctx) override;
 
+    virtual antlrcpp::Any visitExpr_putchar(ifccParser::Expr_putcharContext* ctx) override;
+    virtual antlrcpp::Any visitExpr_getchar(ifccParser::Expr_getcharContext* ctx) override;
+
     virtual antlrcpp::Any visitExpr_arithmetic_add(ifccParser::Expr_arithmetic_addContext* ctx) override;
     virtual antlrcpp::Any visitExpr_arithmetic_mult(ifccParser::Expr_arithmetic_multContext* ctx) override;
     virtual antlrcpp::Any visitExpr_arithmetic_unary(ifccParser::Expr_arithmetic_unaryContext* ctx) override;

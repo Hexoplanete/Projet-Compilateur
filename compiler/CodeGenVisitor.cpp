@@ -70,6 +70,28 @@ antlrcpp::Any CodeGenVisitor::visitExpr_const(ifccParser::Expr_constContext* ctx
 }
 
 /*
+    - Move the character to put in the 32-bit general-purpose register (%edi)
+    - Then call putchar
+*/
+antlrcpp::Any CodeGenVisitor::visitExpr_putchar(ifccParser::Expr_putcharContext* ctx)
+{
+    visit(ctx->expression());
+    std::cout << "\tmovl\t%eax, %edi\n";
+    std::cout << "\tcall\tputchar\n";
+    return 0;
+}
+
+/*
+    - Call getchar and put its value in !reg (%eax)
+*/
+antlrcpp::Any CodeGenVisitor::visitExpr_getchar(ifccParser::Expr_getcharContext* ctx)
+{
+    std::cout << "\tcall\tgetchar\n";
+    return 0;
+}
+
+
+/*
     - Visits the 'expression' we want to perform the operation on, to copy its value into eax
     - Depending on the operator :
         If the unary operation is "-", changes the sign of the expression value in eax

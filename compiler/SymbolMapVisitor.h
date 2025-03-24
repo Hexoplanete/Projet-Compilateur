@@ -15,8 +15,8 @@ public:
     // Those methods generate non-temporary variables
     virtual antlrcpp::Any visitStmt_declaration(ifccParser::Stmt_declarationContext* ctx) override;
     virtual antlrcpp::Any visitDeclaration(ifccParser::DeclarationContext* ctx) override;
-
-    // This method updates the usege status of variable
+    
+    // This method updates the usage of status of variable
     virtual antlrcpp::Any visitExpr_ident(ifccParser::Expr_identContext* ctx) override;
 
     // Those methods generate temporary variables
