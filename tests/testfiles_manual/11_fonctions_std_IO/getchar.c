@@ -1,8 +1,8 @@
-#include <stdio.h>
+// #include <stdio.h>
 
-int main() {
-    int a;
-    getchar()
-    a = getchar();
-    return a;
-}
+// int main() {
+//     int a;
+//     getchar()
+//     a = getchar();
+//     return a;
+// }
