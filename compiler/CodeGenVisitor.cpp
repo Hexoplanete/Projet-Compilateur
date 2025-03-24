@@ -10,6 +10,7 @@ CodeGenVisitor::~CodeGenVisitor() {}
     - Visits all children of the Prog symbol so that the actual program assembly code can be written
     - Writes the epilogue
 */
+
 antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext* ctx)
 {
     std::cout << ".globl main\n";
@@ -59,7 +60,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr_ident(ifccParser::Expr_identContext* ctx
 }
 
 /*
-    - Decrypts the value 'CONST' into an integer value 
+    - Decrypts the value 'CONST' into an integer value
     - Moves the constant value into eax
 */
 antlrcpp::Any CodeGenVisitor::visitExpr_const(ifccParser::Expr_constContext* ctx)
@@ -90,9 +91,9 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_add_unary(ifccParser::Expr_ar
     - Copies the left expression value (inside eax) to this temporary variable in order to free eax
 
     - Visits the 'expression' on the right side of the arithmetic expression to copy its value into eax
-    
+
     - Decides which assembly operation should be used given the operator in the arithmetic expression (either '+' or '-')
-    
+
     - Places the result of 'left + right' or 'left - right' into the temporary variable
     - Copies the result from the temporary variable to eax
 */
@@ -102,7 +103,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_add(ifccParser::Expr_arithmet
     int tmpAddress = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
     std::cout << "\tmovl\t%eax, " << tmpAddress << "(%rbp)\n";
     visit(ctx->expression(1));
-    
+
     std::string op = ctx->OP_ADD()->getText() == "+" ? "addl" : "subl";
     std::cout << "\t" << op << "\t%eax, " << tmpAddress << "(%rbp)\n";
     std::cout << "\tmovl\t" << tmpAddress << "(%rbp), %eax\n";
@@ -115,7 +116,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_add(ifccParser::Expr_arithmet
     - Copies the left expression value (inside eax) to this temporary variable in order to free eax
 
     - Visits the expression on the right side of the arithmetic expression to copy its value into eax
-    
+
     - Depending on the operator found in the arithmetic operation, the generated assembly code differs :
 
         Case of the multiplication ('*') :
@@ -135,10 +136,10 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_mult(ifccParser::Expr_arithme
     int tmpAddressL = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
     std::cout << "\tmovl\t%eax, " << tmpAddressL << "(%rbp)\n";
     visit(ctx->expression(1));
-    
+
     std::string op = ctx->OP_MULT()->getText().c_str();
-    
-    if(op == "*"){ // Case of the multiplication : simple assembly code ------
+
+    if (op == "*") { // Case of the multiplication : simple assembly code ------
         std::cout << "\timull\t" << tmpAddressL << "(%rbp), %eax\n";
         return 0;
     }
@@ -147,10 +148,10 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_mult(ifccParser::Expr_arithme
 
     int tmpAddressR = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
     std::cout << "\tmovl\t%eax, " << tmpAddressR << "(%rbp)\n";
-    
+
     std::cout << "\tmovl\t" << tmpAddressL << "(%rbp), %eax\n";
     std::cout << "\tcltd\n"; // 'cltd' = 'Convert Long To Double'
-    
+
     std::cout << "\tidivl\t" << tmpAddressR << "(%rbp)\n";
 
     if (op == "%") { // Case of the modulo : must fetch the result from edx --
