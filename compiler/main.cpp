@@ -8,24 +8,21 @@
 #include "generated/ifccParser.h"
 #include "generated/ifccBaseVisitor.h"
 
-#include "CodeGenVisitor.h"
+#include "CFGVisitor.h"
 #include "SymbolMapVisitor.h"
 
 int main(int argn, const char** argv)
 {
     std::stringstream in;
-    if (argn == 2)
-    {
+    if (argn == 2){
         std::ifstream lecture(argv[1]);
-        if (!lecture.good())
-        {
+        if (!lecture.good()) {
             std::cerr << "error: cannot read file: " << argv[1] << std::endl;
             exit(1);
         }
         in << lecture.rdbuf();
     }
-    else
-    {
+    else {
         std::cerr << "usage: ifcc path/to/file.c" << std::endl;
         exit(1);
     }
@@ -40,11 +37,16 @@ int main(int argn, const char** argv)
     ifccParser parser(&tokens);
     antlr4::tree::ParseTree* tree = parser.axiom();
 
-    if (parser.getNumberOfSyntaxErrors() != 0)
-    {
+    if (parser.getNumberOfSyntaxErrors() != 0) {
         std::cerr << "error: syntax error during parsing" << std::endl;
         exit(1);
     }
+
+    /*
+    - ConstraintCheckVisitor parses the AST and checks variable usage using the symbol table
+    - CFGVisitor parses the AST and creates the CFG
+    - A call to a function of the CFG recursively generates the assembly code from the CFG
+    */
 
     // First step of compilation : the SymbolMapVisitor parses the AST to establish the table,
     // which will associate variable names to memory addresses

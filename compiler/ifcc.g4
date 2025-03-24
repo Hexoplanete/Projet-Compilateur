@@ -33,6 +33,10 @@ expression:
 stmt_jump: RETURN expression? ';' # stmt_jump_return;
 
 stmt_block: '{' stmt* '}';
+// const_expr:
+// 	INTEGER
+// 	| CHAR
+// 	| FLOAT
 
 
 // TODO : Implémenter les caractères
