@@ -216,14 +216,12 @@ for jobname in jobs:
         continue
     elif gccstatus != 0 and ifccstatus == 0:
         ## ifcc wrongly accepts invalid program -> error
-        print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1]) if args.verbose else None
         print("TEST FAIL (your compiler accepts an invalid program)\r\n") if args.verbose else None
         data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[31mFAIL\033[0m", gccstatus, ifccstatus,"your compiler accepts an invalid program"])
         nb_failure+=1
         continue
     elif gccstatus == 0 and ifccstatus != 0:
         ## ifcc wrongly rejects valid program -> error
-        print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1]) if args.verbose else None
         print("TEST FAIL (your compiler rejects a valid program)\r\n") if args.verbose else None
         data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[31mFAIL\033[0m", gccstatus, ifccstatus, "your compiler rejects a valid program"])
         nb_failure+=1
@@ -234,7 +232,6 @@ for jobname in jobs:
         ## ifcc accepts to compile valid program -> let's link it
         ldstatus=command("gcc -o exe-ifcc asm-ifcc.s", "ifcc-link.txt")
         if ldstatus:
-            print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1]) if args.verbose else None
             print("TEST FAIL (your compiler produces incorrect assembly)\r\n") if args.verbose else None
             data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[31mFAIL\033[0m", 0, ldstatus,"your compiler produces incorrect assembly"])
             nb_failure+=1
@@ -247,7 +244,6 @@ for jobname in jobs:
         
     exeifccstatus = command("./exe-ifcc","ifcc-execute.txt")
     if open("gcc-execute.txt").read() != open("ifcc-execute.txt").read() :
-        print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1]) if args.verbose else None
         print("TEST FAIL (different results at execution)\r\n") if args.verbose else None
         data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[31mFAIL\033[0m", exegccstatus, exeifccstatus,"different results at execution"])
         nb_failure+=1
