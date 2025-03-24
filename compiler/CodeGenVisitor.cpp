@@ -75,11 +75,15 @@ antlrcpp::Any CodeGenVisitor::visitExpr_const(ifccParser::Expr_constContext* ctx
         If the unary operation is "-", changes the sign of the expression value in eax
         If the unary opration is "+", does nothing
 */
-antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_add_unary(ifccParser::Expr_arithmetic_add_unaryContext* ctx)
+antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_unary(ifccParser::Expr_arithmetic_unaryContext* ctx)
 {
     visit(ctx->expression());
-    if (ctx->OP_ADD()->getText() == "-") {
+    if (ctx->OP_ADD() && ctx->OP_ADD()->getText() == "-")
         std::cout << "\tnegl\t%eax\n";
+    else if (ctx->OP_OR()) {
+        std::cout << "\tcmpl\t$0, %eax\n";
+        std::cout << "\tsete\t%al\n";
+        std::cout << "\tmovzbl\t%al, %eax\n";
     }
     return 0;
 }

@@ -15,7 +15,7 @@ expression:
 	IDENTIFIER						# expr_ident
 	| CONST							# expr_const
 	| '(' expression ')'			# expr_arithmetic_par
-	| OP_ADD expression				# expr_arithmetic_add_unary
+	| (OP_ADD|OP_OR) expression		# expr_arithmetic_unary
 	| expression OP_MULT expression	# expr_arithmetic_mult
 	| expression OP_ADD expression	# expr_arithmetic_add
 	| expression '&' expression		# expr_arithmetic_bit_and
@@ -32,6 +32,7 @@ stmt_jump: RETURN expression? ';' # stmt_jump_return;
 
 OP_MULT: [*/%];
 OP_ADD: [+-];
+OP_OR: '!';
 TYPE: 'int';
 RETURN: 'return';                   // VARNAME must be after TYPE and RETURN, to avoid rule conflicts.
 IDENTIFIER: [a-zA-Z_][a-zA-Z_0-9]*;    // ex : 'int' must be evaluated as a TYPE to avoid it being evaluated
