@@ -15,9 +15,9 @@ expression:
 	IDENTIFIER						# expr_ident
 	| CONST							# expr_const
 	| '(' expression ')'			# expr_arithmetic_par
-	| (OP_ADD|OP_OR) expression		# expr_arithmetic_unary
 	| 'getchar()'					# expr_getchar
 	| 'putchar(' expression ')'		# expr_putchar
+	| (OP_ADD|OP_OR) expression		# expr_arithmetic_unary
 	| expression OP_MULT expression	# expr_arithmetic_mult
 	| expression OP_ADD expression	# expr_arithmetic_add
 	| expression '&' expression		# expr_arithmetic_bit_and
