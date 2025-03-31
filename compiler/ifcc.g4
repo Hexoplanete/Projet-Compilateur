@@ -32,7 +32,6 @@ stmt_jump: RETURN expression? ';' # stmt_jump_return;
 
 
 // TODO : Implémenter les caractères
-// TODO : Implémenter les opérateurs de comparaison
 
 OP_MULT: [*/%];
 OP_ADD: [+-];
