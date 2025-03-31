@@ -11,15 +11,45 @@ antlrcpp::Any SymbolMapVisitor::visitProg(ifccParser::ProgContext* ctx)
 {
     _symbolMap.clear();
     _unusedSymbols.clear();
+    _blockParentMap.clear();
+    _currentAddress.clear();
+    _parentFunction.clear();
 
     visitChildren(ctx);
 
-    if (!_unusedSymbols.empty()) {
-        std::cerr << "error: Unused variable detected : ";
-        for (const auto& symbol : _unusedSymbols) std::cerr << symbol << " ";
-        std::cerr << std::endl;
+    //CHANGEa
+    for(std::map<std::string, std::set<std::string>>::iterator it = _unusedSymbols.begin(); it != _unusedSymbols.end(); ++it) {
+        if (!it->second.empty()) {
+            std::cerr << "error: Unused variable detected : ";
+            for (const auto& symbol : it->second) std::cerr << symbol << " ";
+            std::cerr << std::endl;
+        }
     }
 
+    return 0;
+}
+
+antlrcpp::Any SymbolMapVisitor::visitMain(ifccParser::MainContext* ctx)
+{
+    _blockParentMap["main"] = _currentBlock;
+    _currentBlock = "main";
+    _symbolMap["main"].clear();
+    _currentAddress["main"] = 0;
+    _parentFunction["main"] = "main";
+    visitChildren(ctx);
+    _currentBlock = _blockParentMap[_currentBlock];
+    return 0;
+}
+
+antlrcpp::Any SymbolMapVisitor::visitStmt_block(ifccParser::Stmt_blockContext* ctx)
+{
+    std::string blockNumber = "block" + std::to_string(_blockCount++);
+    _parentFunction[blockNumber] = _parentFunction[_currentBlock];
+    _blockParentMap[blockNumber] = _currentBlock;
+    _currentBlock = blockNumber;
+    _symbolMap[blockNumber].clear();
+    visitChildren(ctx);
+    _currentBlock = _blockParentMap[_currentBlock];
     return 0;
 }
 
@@ -43,7 +73,7 @@ antlrcpp::Any SymbolMapVisitor::visitStmt_declaration(ifccParser::Stmt_declarati
 antlrcpp::Any SymbolMapVisitor::visitDeclaration(ifccParser::DeclarationContext* ctx)
 {
     std::string varname = ctx->IDENTIFIER()->getText();
-    if (_symbolMap.find(varname) != _symbolMap.end()) {
+    if (_symbolMap[_currentBlock].find(varname) != _symbolMap[_currentBlock].end()) {
         std::cerr << "error: Variable already defined." << std::endl;
         exit(1);
     }
@@ -164,12 +194,17 @@ antlrcpp::Any SymbolMapVisitor::visitExpr_equal(ifccParser::Expr_equalContext* c
 antlrcpp::Any SymbolMapVisitor::visitExpr_ident(ifccParser::Expr_identContext* ctx)
 {
     std::string varname = ctx->IDENTIFIER()->getText();
-    if (_symbolMap.find(varname) == _symbolMap.end()) { 
-        std::cerr << "error: Undefined variable." << std::endl;
-        exit(1);
+    std::string block(_currentBlock);
+    while (block.compare("")){
+        if (_symbolMap[block].find(varname) != _symbolMap[block].end()) {
+            //CHANGERa
+            _unusedSymbols[block].erase(varname);
+            return 0;
+        }
+        block = _blockParentMap[block];
     }
-    _unusedSymbols.erase(varname);
-    return 0;
+    std::cerr << "error: Undefined variable." << std::endl;
+    exit(1);
 }
 
 /*
@@ -179,7 +214,7 @@ antlrcpp::Any SymbolMapVisitor::visitExpr_ident(ifccParser::Expr_identContext* c
 */
 void SymbolMapVisitor::addVariable(std::string name, int size, bool used)
 {    
-    _currentAddress -= size;
-    _symbolMap[name] = _currentAddress;
-    if (!used) _unusedSymbols.insert(name);
+    _currentAddress[_parentFunction[_currentBlock]] -= size;
+    _symbolMap[_currentBlock][name] = _currentAddress[_parentFunction[_currentBlock]];
+    if (!used) _unusedSymbols[_currentBlock].insert(name);
 }

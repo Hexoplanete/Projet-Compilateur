@@ -53,7 +53,7 @@ int main(int argn, const char** argv)
 
     // Second step of compilation : the CodeGenVisitor parses the AST once again and, with the
     // help of the symbol table, generates assembly code corresponding to the tree
-    CodeGenVisitor generatorVisitor(symbolsVisitor.getSymbolMap());
+    CodeGenVisitor generatorVisitor(symbolsVisitor.getSymbolMap(), symbolsVisitor.getBlockParentBlock());
     generatorVisitor.visit(tree);
 
     return 0;

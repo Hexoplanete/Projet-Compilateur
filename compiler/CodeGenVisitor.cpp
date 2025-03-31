@@ -1,6 +1,6 @@
 #include "CodeGenVisitor.h"
 
-CodeGenVisitor::CodeGenVisitor(std::map<std::string, int>& symbols) : _symbolMap(symbols), _tmpCount(0) {}
+CodeGenVisitor::CodeGenVisitor(std::map<std::string, std::map<std::string, int>>& symbols, std::map<std::string, std::string>& blockParent) : _symbolMap(symbols), _blockParentMap(blockParent), _tmpCount(0), _blockCount(0) {}
 
 CodeGenVisitor::~CodeGenVisitor() {}
 
@@ -12,6 +12,13 @@ CodeGenVisitor::~CodeGenVisitor() {}
 */
 antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext* ctx)
 {
+    ifccBaseVisitor::visitProg(ctx);
+    return 0;
+}
+
+
+antlrcpp::Any CodeGenVisitor::visitMain(ifccParser::MainContext* ctx)
+{
     std::cout << ".globl main\n";
     std::cout << "main:\n";
     std::cout << "\t# prologue:\n";
@@ -19,12 +26,15 @@ antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext* ctx)
     std::cout << "\tmovq %rsp, %rbp # define %rbp for the current function\n\n";
 
     std::cout << "\t# body:\n";
-    ifccBaseVisitor::visitProg(ctx);
+
+    _currentBlock = "main";
+    ifccBaseVisitor::visitMain(ctx);
+    _currentBlock = _blockParentMap[_currentBlock];
 
     std::cout << "\n\t# epilogue:\n";
     std::cout << "\tpopq %rbp # restore %rbp from the stack\n";
     std::cout << "\tret # return to the caller (here the shell)" << std::endl;
-
+    
     return 0;
 }
 
@@ -41,7 +51,7 @@ antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext* c
 {
     if (ctx->expression()) {
         visit(ctx->expression());
-        int identAddress = _symbolMap[ctx->IDENTIFIER()->getText()];
+        int identAddress = getAddress(ctx->IDENTIFIER()->getText());
         std::cout << "\tmovl\t%eax, " << identAddress << "(%rbp)\n";
     }
     return 0;
@@ -53,7 +63,7 @@ antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext* c
 */
 antlrcpp::Any CodeGenVisitor::visitExpr_ident(ifccParser::Expr_identContext* ctx)
 {
-    int identAddress = _symbolMap[ctx->IDENTIFIER()->getText()];
+    int identAddress = getAddress(ctx->IDENTIFIER()->getText());
     std::cout << "\tmovl\t" << identAddress << "(%rbp), %eax\n";
     return 0;
 }
@@ -125,7 +135,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_unary(ifccParser::Expr_arithm
 antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_add(ifccParser::Expr_arithmetic_addContext* ctx)
 {
     visit(ctx->expression(0));
-    int tmpAddress = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
+    int tmpAddress = getAddress("@tmp" + std::to_string(_tmpCount++));
     std::cout << "\tmovl\t%eax, " << tmpAddress << "(%rbp)\n";
     visit(ctx->expression(1));
     
@@ -158,7 +168,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_add(ifccParser::Expr_arithmet
 antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_mult(ifccParser::Expr_arithmetic_multContext* ctx)
 {
     visit(ctx->expression(0));
-    int tmpAddressL = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
+    int tmpAddressL = getAddress("@tmp" + std::to_string(_tmpCount++));
     std::cout << "\tmovl\t%eax, " << tmpAddressL << "(%rbp)\n";
     visit(ctx->expression(1));
     
@@ -171,7 +181,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_mult(ifccParser::Expr_arithme
 
     // Case of the division and modulo : more complex assembly code ----------
 
-    int tmpAddressR = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
+    int tmpAddressR = getAddress("@tmp" + std::to_string(_tmpCount++));
     std::cout << "\tmovl\t%eax, " << tmpAddressR << "(%rbp)\n";
     
     std::cout << "\tmovl\t" << tmpAddressL << "(%rbp), %eax\n";
@@ -198,7 +208,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_mult(ifccParser::Expr_arithme
 antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_bit_and(ifccParser::Expr_arithmetic_bit_andContext* ctx)
 {
     visit(ctx->expression(0));
-    int tmpAddress = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
+    int tmpAddress = getAddress("@tmp" + std::to_string(_tmpCount++));
     std::cout << "\tmovl\t%eax, " << tmpAddress << "(%rbp)\n";
     visit(ctx->expression(1));
     
@@ -220,7 +230,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_bit_and(ifccParser::Expr_arit
 antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_bit_xor(ifccParser::Expr_arithmetic_bit_xorContext* ctx)
 {
     visit(ctx->expression(0));
-    int tmpAddress = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
+    int tmpAddress = getAddress("@tmp" + std::to_string(_tmpCount++));
     std::cout << "\tmovl\t%eax, " << tmpAddress << "(%rbp)\n";
     visit(ctx->expression(1));
     
@@ -242,7 +252,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_bit_xor(ifccParser::Expr_arit
 antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_bit_or(ifccParser::Expr_arithmetic_bit_orContext* ctx)
 {
     visit(ctx->expression(0));
-    int tmpAddress = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
+    int tmpAddress = getAddress("@tmp" + std::to_string(_tmpCount++));
     std::cout << "\tmovl\t%eax, " << tmpAddress << "(%rbp)\n";
     visit(ctx->expression(1));
     
@@ -266,7 +276,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_bit_or(ifccParser::Expr_arith
 antlrcpp::Any CodeGenVisitor::visitExpr_compare(ifccParser::Expr_compareContext* ctx)
 {
     visit(ctx->expression(0));
-    int tmpAddress = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
+    int tmpAddress = getAddress("@tmp" + std::to_string(_tmpCount++));
     std::cout << "\tmovl\t%eax, " << tmpAddress << "(%rbp)\n";
     visit(ctx->expression(1));
 
@@ -292,7 +302,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr_compare(ifccParser::Expr_compareContext*
 antlrcpp::Any CodeGenVisitor::visitExpr_equal(ifccParser::Expr_equalContext* ctx)
 {
     visit(ctx->expression(0));
-    int tmpAddress = _symbolMap["@tmp" + std::to_string(_tmpCount++)];
+    int tmpAddress = getAddress("@tmp" + std::to_string(_tmpCount++));
     std::cout << "\tmovl\t%eax, " << tmpAddress << "(%rbp)\n";
     visit(ctx->expression(1));
 
@@ -313,7 +323,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr_assign(ifccParser::Expr_assignContext* c
 {
     visit(ctx->expression());
 
-    int identAddress = _symbolMap[ctx->IDENTIFIER()->getText()];
+    int identAddress = getAddress(ctx->IDENTIFIER()->getText());
     std::cout << "\tmovl\t%eax, " << identAddress << "(%rbp)\n";
     return 0;
 }
@@ -325,4 +335,26 @@ antlrcpp::Any CodeGenVisitor::visitStmt_jump_return(ifccParser::Stmt_jump_return
 {
     visit(ctx->expression());
     return 0;
+}
+
+antlrcpp::Any CodeGenVisitor::visitStmt_block(ifccParser::Stmt_blockContext *ctx)
+{
+    std::string blockNumber = "block" + std::to_string(_blockCount++);
+    _currentBlock = blockNumber;
+    ifccBaseVisitor::visitStmt_block(ctx);
+    _currentBlock = _blockParentMap[_currentBlock];
+    return 0;
+}
+
+
+int CodeGenVisitor::getAddress(std::string varName)
+{
+    std::string block(_currentBlock);
+    while (block.compare("")){
+        if (_symbolMap[block].find(varName) != _symbolMap[block].end()) {
+            return _symbolMap[block][varName];
+        }
+        block = _blockParentMap[block];
+    }
+    return 0; // Just in case
 }

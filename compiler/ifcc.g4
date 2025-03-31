@@ -2,9 +2,12 @@ grammar ifcc;
 
 axiom: prog EOF;
 
-prog: 'int' 'main' '(' ')' '{' stmt* stmt_jump '}';
+prog: main;
 
-stmt: stmt_declaration | stmt_expression | stmt_jump;
+main: 'int' 'main' '(' ')' '{' stmt* stmt_jump '}';
+
+stmt:
+	stmt_declaration | stmt_expression | stmt_jump | stmt_block ;
 
 // TODO : quand on aura + de types
 stmt_declaration: TYPE declaration (',' declaration)* ';';
@@ -29,6 +32,7 @@ expression:
 
 stmt_jump: RETURN expression? ';' # stmt_jump_return;
 
+stmt_block: '{' stmt* '}';
 
 
 // TODO : Implémenter les caractères
