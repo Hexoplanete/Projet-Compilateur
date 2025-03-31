@@ -33,7 +33,7 @@ class ControlFlowGraph;
 
 Possible optimization:
      a cmp_* comparison instructions, if it isublic:
-    Add(std::string dest, std::string leftOperandn std::string right);
+    Add(std::string dest, std::string leftOperand std::string right);
 
 private:
     std::string dest;
@@ -43,12 +43,15 @@ private:
        followed by a conditional jump to the exit_false branch
 */
 
-// TODO readd type
+// TODO read type
 class BasicBlock {
 public:
-    BasicBlock(ControlFlowGraph* cfg, std::string label);
+    BasicBlock(ControlFlowGraph& cfg, std::string label);
 
-    void addInstruction(std::unique_ptr<Instruction> instruction);
+    template <typename TInst, typename... IArgs>
+    void addInstruction(IArgs&&... args) {
+        instructions.push_back(std::make_unique<TInst>(*this, args...));
+    }
 
     void getAsm(std::ostream& o); // < x86 assembly code generation for this basic block (very simple)
 
@@ -56,10 +59,9 @@ public:
 
 protected:
     std::string label; // label of the BB, also will be the label in the generated code
-    std::vector<Instruction*> instrs; // the instructions themselves.
-    BasicBlock& exitTrue;  // pointer to the next basic block, true branch. If nullptr, return from procedure
-    BasicBlock& exitFalse; // pointer to the next basic block, false branch. If null_ptr, the basic block ends with an unconditional jump
-    // std::string test_var_name;  // when generating IR code for an if(expr) or while(expr) e
-    ControlFlowGraph* cfg; // the ControlFlowGraph where this block belongs
+    std::vector<std::unique_ptr<Instruction>> instructions; // the instructions themselves.
+    BasicBlock* exitTrue;  // pointer to the next basic block, true branch. If nullptr, return from procedure
+    BasicBlock* exitFalse; // pointer to the next basic block, false branch. If null_ptr, the basic block ends with an unconditional jump
+    ControlFlowGraph& cfg; // the ControlFlowGraph where this block belongs
 };
 }

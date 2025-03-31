@@ -16,53 +16,53 @@ class BasicBlock;
 class Instruction {
 
 public:
-    // The instructions themselves - feel free to subclass instead
-    enum Operation {
+    // // The instructions themselves - feel free to subclass instead
+    // enum Operation {
 
-        // Stack variables
-        LdConst,
-        Copy,
+    //     // Stack variables
+    //     LdConst,
+    //     Copy,
 
-        // TODO
-        // Heap variables
-        // MemRead, MemWrite,
+    //     // TODO
+    //     // Heap variables
+    //     // MemRead, MemWrite,
 
-        // TODO
-        // Functions
-        // Call,
+    //     // TODO
+    //     // Functions
+    //     // Call,
 
-        // Arithmetic operators
-        Add, Sub, Mul, Div, Mod,
-        Negate,
+    //     // Arithmetic operators
+    //     Add, Sub, Mul, Div, Mod,
+    //     Negate,
 
-        // TODO
-        // Comparison operators
-        // CmpEq, CmpLt, CmpLe
+    //     /j/ TODO
+    //     // Comparison operators
+    //     // CmpEq, CmpLt, CmpLe
 
-        // Control instructions
-        Return,
-    };
+    //     // Control instructions
+    //     Return,
+    // };
 
 
 
     //  Actual code generation
-    void getAsm(std::ostream& o); // < x86 assembly code generation for this IR instruction
+    void getAsm(std::ostream& o); // T86 assembly code generation for this IR instruction
 
-    virtual ~Instruction();
+    virtual ~Instruction() {}
 
 protected:
     //   constructor
-    Instruction(BasicBlock* bb, Operation op /*, Type t*/);
+    Instruction(BasicBlock& block /*, Operation op, Type t*/) : block(block)/*, op(op)*/ {}
 
     // variables
-    BasicBlock* bb; // < The BB this instruction belongs to, which provides a pointer to the CFG this instruction belongs to
-    Operation op;
+    BasicBlock& block; // The BB this instruction belongs to, which provides a pointer to the CFG this instruction belongs to
+    // Operation op;
     // Type t;
 };
 
 class LdConst : public Instruction {
 public:
-    LdConst(std::string dest, int constValue);
+    LdConst(BasicBlock& block, std::string dest, int constValue) : Instruction(block), dest(dest), value(value) {}
 
 private:
     std::string dest;
@@ -71,7 +71,7 @@ private:
 
 class Copy : public Instruction {
 public:
-    Copy(std::string dest, std::string source);
+    Copy(BasicBlock& block, std::string dest, std::string source) : Instruction(block), dest(dest), source(source) {}
 
 private:
     std::string dest;
@@ -81,36 +81,40 @@ private:
 
 class Add : public Instruction {
 public:
-    Add(std::string dest, std::string leftOperand, std::string rightOperand);
+    Add(BasicBlock& block, std::string dest, std::string leftOperand, std::string rightOperand) : Instruction(block), dest(dest), leftOperand(leftOperand), rightOperand(rightOperand) {}
 
 private:
+    std::string dest;
     std::string leftOperand;
     std::string rightOperand;
 };
 
 class Sub : public Instruction {
 public:
-    Sub(std::string dest, std::string leftOperand, std::string rightOperand);
+    Sub(BasicBlock& block, std::string dest, std::string leftOperand, std::string rightOperand) : Instruction(block), dest(dest), leftOperand(leftOperand), rightOperand(rightOperand) {}
 
 private:
+    std::string dest;
     std::string leftOperand;
     std::string rightOperand;
 };
 
 class Mul : public Instruction {
 public:
-    Mul(std::string dest, std::string leftOperand, std::string rightOperand);
+    Mul(BasicBlock& block, std::string dest, std::string leftOperand, std::string rightOperand) : Instruction(block), dest(dest), leftOperand(leftOperand), rightOperand(rightOperand) {}
 
 private:
+    std::string dest;
     std::string leftOperand;
     std::string rightOperand;
 };
 
 class Div : public Instruction {
 public:
-    Div(std::string dest, std::string leftOperand, std::string rightOperand);
+    Div(BasicBlock& block, std::string dest, std::string leftOperand, std::string rightOperand) : Instruction(block), dest(dest), leftOperand(leftOperand), rightOperand(rightOperand) {}
 
 private:
+    std::string dest;
     std::string leftOperand;
     std::string rightOperand;
 };
@@ -118,16 +122,17 @@ private:
 
 class Mod : public Instruction {
 public:
-    Mod(std::string dest, std::string leftOperand, std::string rightOperand);
+    Mod(BasicBlock& block, std::string dest, std::string leftOperand, std::string rightOperand) : Instruction(block), dest(dest), leftOperand(leftOperand), rightOperand(rightOperand) {}
 
 private:
+    std::string dest;
     std::string leftOperand;
     std::string rightOperand;
 };
 
 class Negate : public Instruction {
 public:
-    Negate(std::string dest, std::string operand);
+    Negate(BasicBlock& block, std::string dest, std::string operand) : Instruction(block), dest(dest), operand(operand) {}
 
 private:
     std::string dest;
@@ -135,10 +140,10 @@ private:
 };
 
 class Return : public Instruction {
-    public:
-        Return(std::string operand);
-    
-    private:
-        std::string operand;
-    };
+public:
+    Return(BasicBlock& block, std::string operand) : Instruction(block), operand(operand) {}
+
+private:
+    std::string operand;
+};
 }
