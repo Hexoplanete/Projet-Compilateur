@@ -32,7 +32,10 @@ Les tests ont été regroupés par thèmes dans le dossier testfiles conforméme
 - 10_affectations
 - 11_fonctions_std_IO
 - 12_fonctions_param
+- 13_coherence des appels
 - 14_structure_blocs
+- 15_portee_variables
+- 16_if_else_while
 - 17_return_anywhere
 - 18_verif_var_decl
 - 19_verif_var_decl_once
@@ -46,18 +49,18 @@ Les tests ont été regroupés par thèmes dans le dossier testfiles conforméme
 
 Pour compiler, dans le dossier compiler : `make`
 
-Pour supprimer tous les fichiers générés : `make clean`
+Pour supprimer tous les fichiers générés (exécutables): `make clean`
 
 Le programme fonctionne de la manière suivante : 
-1. L'AST est analysé grammaticalement par le SymbolMapVisitor. Cela va permettre d'établir la table de symboles qui va associer un nom de variable à une adresse mémoire.
+1. L'AST (Abstract Syntax Tree) est analysé grammaticalement par le SymbolMapVisitor. Cela va permettre d'établir la table de symboles qui va associer un nom de variable à une adresse mémoire.
 2. L'AST est de nouveau analysé grammaticalement, mais cette fois ci par CodeGenVisitor qui, avec l'aide de la table de symboles, va construire le programme assembleur associé à l'arbre.
 
 Dans la partie 1 : **ANALYSE ET CONSTRUCTION DE LA TABLE DE SYMBOLES**
 - Le programme est visité, les enfants de cette déclaration sont également visités, et ça récursivement pour les enfants.
 - La taille de la variable est déduite en fonction des types dans le cas des déclarations (+ définitions).
 - L'adresse de stockage de la variable est calculée en fonction de la taille déterminée plus tôt.
-- Le nom des variables est extraite du symbole VARNAME, dans le cas où il existe déjà dans la table de symbole, un erreur est renvoyée.
-- Des variables temporaires @tmpX et @tmpY sont crées dans la table de symbole pour être en mesure de gérer des affectations ainsi que la division et le modulo.
+- Le nom des variables est extrait du symbole VARNAME, dans le cas où il existe déjà dans la table de symbole, un erreur est renvoyée.
+- Des variables temporaires @tmpX et @tmpY sont crées dans la table de symbole pour être en mesure de gérer les différentes opérations (affectations, division, modulo...)
 
 
 Dans la partie 2 : **CONSTRUCTION DU CODE ASSEMBLEUR**
