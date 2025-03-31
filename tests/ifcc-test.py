@@ -20,6 +20,7 @@ import shutil
 import sys
 import subprocess
 from tabulate import tabulate
+import itertools
 
 def command(string, logfile=None):
     """execute `string` as a shell command, optionnaly logging stdout+stderr to a file. return exit status.)"""
@@ -132,9 +133,14 @@ if args.debug:
 ## PREPARE step: copy all test-cases under ifcc-test-output
 print("Preparing test cases...")
 
+# Idle loading wheel
+loading_wheel = itertools.cycle(["[\\]", "[|]", "[/]", "[-]"])
+
 jobs=[]
 
 for inputfilename in inputfilenames:
+    sys.stdout.write("\r" + next(loading_wheel))
+    sys.stdout.flush()
     if args.debug>=2:
         print("debug: PREPARING "+inputfilename)
 
@@ -143,7 +149,7 @@ for inputfilename in inputfilenames:
         exit(1)
     
     ## each test-case gets copied and processed in its own subdirectory:
-    subdir='ifcc-test-output/'+inputfilename.strip("./")[:-2]
+    subdir='../tests/ifcc-test-output/'+inputfilename.strip("./")[:-2]
     os.makedirs(subdir, exist_ok=True)
     shutil.copyfile(inputfilename, subdir+'/input.c')
     jobs.append(subdir)
@@ -151,6 +157,8 @@ for inputfilename in inputfilenames:
 ## eliminate duplicate paths from the 'jobs' list
 unique_jobs=[]
 for j in jobs:
+    sys.stdout.write("\r" + next(loading_wheel))
+    sys.stdout.flush()
     for d in unique_jobs:
         if os.path.samefile(j,d):
             break # and skip the 'else' branch
@@ -165,7 +173,7 @@ if args.debug:
 
 ######################################################################################
 ## TEST step: actually compile all test-cases with both compilers
-print("Running test cases...")
+print("\n\nRunning test cases...")
 
 nb_success=0
 nb_failure=0
@@ -178,12 +186,14 @@ color_dict = {"red": "\033[91m",
 		"yellow": "\033[93m",
 		"na": ""
 		}
+# ANSI escape codes for the progress bar
 reset_color = "\033[0m"
 reset_cursor = "\033[1000D"
 bar_length = 50
 
 
 for jobname in jobs:
+    # Progress bar
     width = int((x+1)/(len(jobs)/bar_length))
     bar = "[" + color_dict["green"] + "#" * width + " " * (bar_length - width) + reset_color + "]" + " " + str(x+1) + "/" + str(len(jobs))
     sys.stdout.write(reset_cursor + bar)
