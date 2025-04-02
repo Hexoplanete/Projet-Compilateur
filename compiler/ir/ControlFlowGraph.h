@@ -6,6 +6,7 @@
 #include <initializer_list>
 #include "Block.h"
 #include <memory>
+
 namespace IR {
 
 /* A few important comments:
@@ -14,7 +15,8 @@ namespace IR {
      The exit block is the one with both exit pointers equal to nullptr.
      (again it could be identified in a more explicit way)
 `
- */
+*/
+
 class ControlFlowGraph {
 public:
     ControlFlowGraph();
@@ -27,18 +29,18 @@ public:
     }
 
     // x86 code generation: could be encapsulated in a processor class in a retargetable compiler
-    void getAsm(std::ostream& o);
-    std::string IRRegToAsm(std::string reg); // helper method: inputs a IR reg or input variable, returns e.g. "-24(%rbp)" for the proper value of 24
-    void getAsmPrologue(std::ostream& o);
-    void getAsmEpilogue(std::ostream& o);
+    void generateAsm(std::ostream& o) const;
+    void generateAsmPrologue(std::ostream& o) const;
+    void generateAsmBody(std::ostream& o) const;
+    void generateAsmEpilogue(std::ostream& o) const;
+    std::string varToAsm(std::string variable) const; // helper method: inputs a IR reg or input variable, returns e.g. "-24(%rbp)" for the proper value of 24
 
     // symbol table methods
-    void addToSymbolTable(std::string name /*, Type t*/);
-    std::string createTmpvar(/*Type t*/);
-    int getVarIndex(std::string name);
+    void createSymbolVar(std::string name /*, Type t*/);
+    std::string createTmpVar(/*Type t*/);
     // Type getVarType(std::string name);
 
-    BasicBlock& getCurrentBlock();
+    BasicBlock& getCurrentBlock() const;
     // basic block management
     // std::string new_BB_name();
     

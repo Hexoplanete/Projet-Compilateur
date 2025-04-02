@@ -16,134 +16,105 @@ class BasicBlock;
 class Instruction {
 
 public:
-    // // The instructions themselves - feel free to subclass instead
-    // enum Operation {
-
-    //     // Stack variables
-    //     LdConst,
-    //     Copy,
-
-    //     // TODO
-    //     // Heap variables
-    //     // MemRead, MemWrite,
-
-    //     // TODO
-    //     // Functions
-    //     // Call,
-
-    //     // Arithmetic operators
-    //     Add, Sub, Mul, Div, Mod,
-    //     Negate,
-
-    //     /j/ TODO
-    //     // Comparison operators
-    //     // CmpEq, CmpLt, CmpLe
-
-    //     // Control instructions
-    //     Return,
-    // };
-
-
-
     //  Actual code generation
-    void getAsm(std::ostream& o); // T86 assembly code generation for this IR instruction
+    virtual void generateAsm(std::ostream& o) const = 0;
+    std::string reg() const;
+
+    std::string varToAsm(std::string var) const;
 
     virtual ~Instruction() {}
 
 protected:
     //   constructor
-    Instruction(BasicBlock& block /*, Operation op, Type t*/) : block(block)/*, op(op)*/ {}
+    Instruction(BasicBlock& block /*, Type t*/) : block(block) {}
 
     // variables
     BasicBlock& block; // The BB this instruction belongs to, which provides a pointer to the CFG this instruction belongs to
-    // Operation op;
     // Type t;
 };
 
 class LdConst : public Instruction {
 public:
-    LdConst(BasicBlock& block, std::string dest, int constValue) : Instruction(block), dest(dest), value(value) {}
+    LdConst(BasicBlock& block, int constValue) : Instruction(block), value(constValue) {}
+    void generateAsm(std::ostream& o) const override;
 
 private:
-    std::string dest;
     int value;
 };
 
-class Copy : public Instruction {
+class LdLoc : public Instruction {
 public:
-    Copy(BasicBlock& block, std::string dest, std::string source) : Instruction(block), dest(dest), source(source) {}
+    LdLoc(BasicBlock& block, std::string loc) : Instruction(block), loc(loc) {}
+    void generateAsm(std::ostream& o) const override;
 
 private:
-    std::string dest;
-    std::string source;
+    std::string loc;
 };
 
+class Store : public Instruction {
+public:
+    Store(BasicBlock& block, std::string loc) : Instruction(block), loc(loc) {}
+    void generateAsm(std::ostream& o) const override;
+
+private:
+    std::string loc;
+};
 
 class Add : public Instruction {
 public:
-    Add(BasicBlock& block, std::string dest, std::string leftOperand, std::string rightOperand) : Instruction(block), dest(dest), leftOperand(leftOperand), rightOperand(rightOperand) {}
+    Add(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
 
 private:
-    std::string dest;
-    std::string leftOperand;
-    std::string rightOperand;
+    std::string lhs;
 };
 
 class Sub : public Instruction {
 public:
-    Sub(BasicBlock& block, std::string dest, std::string leftOperand, std::string rightOperand) : Instruction(block), dest(dest), leftOperand(leftOperand), rightOperand(rightOperand) {}
+    Sub(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
 
 private:
-    std::string dest;
-    std::string leftOperand;
-    std::string rightOperand;
+    std::string lhs;
 };
+
 
 class Mul : public Instruction {
 public:
-    Mul(BasicBlock& block, std::string dest, std::string leftOperand, std::string rightOperand) : Instruction(block), dest(dest), leftOperand(leftOperand), rightOperand(rightOperand) {}
+    Mul(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
 
 private:
-    std::string dest;
-    std::string leftOperand;
-    std::string rightOperand;
+    std::string lhs;
 };
 
 class Div : public Instruction {
 public:
-    Div(BasicBlock& block, std::string dest, std::string leftOperand, std::string rightOperand) : Instruction(block), dest(dest), leftOperand(leftOperand), rightOperand(rightOperand) {}
+    Div(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
 
 private:
-    std::string dest;
-    std::string leftOperand;
-    std::string rightOperand;
+    std::string lhs;
 };
-
 
 class Mod : public Instruction {
 public:
-    Mod(BasicBlock& block, std::string dest, std::string leftOperand, std::string rightOperand) : Instruction(block), dest(dest), leftOperand(leftOperand), rightOperand(rightOperand) {}
+    Mod(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
 
 private:
-    std::string dest;
-    std::string leftOperand;
-    std::string rightOperand;
+    std::string lhs;
 };
 
 class Negate : public Instruction {
 public:
-    Negate(BasicBlock& block, std::string dest, std::string operand) : Instruction(block), dest(dest), operand(operand) {}
-
-private:
-    std::string dest;
-    std::string operand;
+    Negate(BasicBlock& block) : Instruction(block) {}
+    void generateAsm(std::ostream& o) const override;
 };
 
 class Return : public Instruction {
 public:
-    Return(BasicBlock& block, std::string operand) : Instruction(block), operand(operand) {}
-
-private:
-    std::string operand;
+    Return(BasicBlock& block) : Instruction(block) {}
+    void generateAsm(std::ostream& o) const override;
 };
 }

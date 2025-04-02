@@ -1,28 +1,63 @@
 #include "ControlFlowGraph.h"
-
+#include <format>
 using namespace IR;
 
-IR::ControlFlowGraph::ControlFlowGraph(): nextBBnumber(0), memoryTop(0){}
-IR::ControlFlowGraph::~ControlFlowGraph(){}
+IR::ControlFlowGraph::ControlFlowGraph() : nextBBnumber(0), memoryTop(0) {}
+IR::ControlFlowGraph::~ControlFlowGraph() {}
 
-void IR::ControlFlowGraph::addToSymbolTable(std::string name)
+void IR::ControlFlowGraph::generateAsm(std::ostream& o) const
 {
-    symbolIndex[name] = reserveSpace(4);    
+    generateAsmPrologue(o);
+    generateAsmBody(o);
+    generateAsmEpilogue(o);
 }
 
-std::string IR::ControlFlowGraph::createTmpvar()
+void IR::ControlFlowGraph::generateAsmPrologue(std::ostream& o) const
 {
-    std::string name = "@tmp" + std::to_string(tmpIndex.size());
+    o << ".globl main\n";
+    o << "main:\n";
+    o << "\t# prologue:\n";
+    o << "\tpushq\t%rbp # save %rbp on the stack\n";
+    o << "\tmovq\t%rsp, %rbp # define %rbp for the current function\n\n";
+}
+
+void IR::ControlFlowGraph::generateAsmBody(std::ostream& o) const
+{
+    o << "\t# body:\n";
+    for (auto&& block : blocks) {
+        block.get()->generateAsm(o);
+    }
+}
+
+void IR::ControlFlowGraph::generateAsmEpilogue(std::ostream& o) const
+{
+    o << "\n\t# epilogue:\n";
+    o << "\tpopq\t%rbp # restore %rbp from the stack\n";
+    o << "\tret # return to the caller (here the shell)" << std::endl;
+}
+
+std::string IR::ControlFlowGraph::varToAsm(std::string variable) const
+{
+    switch (variable[0]) {
+    case '?': return "%eax";
+    case '!': return std::to_string(tmpIndex.at(variable)) + "(%rbp)";
+    default:  return std::to_string(symbolIndex.at(variable)) + "(%rbp)";
+    }
+}
+
+void IR::ControlFlowGraph::createSymbolVar(std::string name)
+{
+    symbolIndex[name] = reserveSpace(4);
+}
+
+std::string IR::ControlFlowGraph::createTmpVar()
+{
+    std::string name = "!" + std::to_string(tmpIndex.size());
     tmpIndex[name] = reserveSpace(4);
     return name;
 }
 
-int IR::ControlFlowGraph::getVarIndex(std::string name)
-{
-    return (symbolIndex.find("f") != symbolIndex.end()) ? symbolIndex.at(name) : tmpIndex.at(name);
-}
-
-BasicBlock& IR::ControlFlowGraph::getCurrentBlock()
+BasicBlock& IR::ControlFlowGraph::getCurrentBlock() const
 {
     return *blocks.at(blocks.size() - 1).get();
 }

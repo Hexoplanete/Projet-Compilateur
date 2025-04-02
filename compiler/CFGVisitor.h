@@ -21,6 +21,7 @@ public:
     
     virtual antlrcpp::Any visitStmt_jump_return(ifccParser::Stmt_jump_returnContext *ctx) override;
 
+    inline IR::ControlFlowGraph& getCFG() { return cfg; }
 private:
     IR::ControlFlowGraph cfg;
 };

@@ -2,69 +2,77 @@
 #include "ir/Instruction.h"
 #include <memory>
 
-CFGVisitor::CFGVisitor(){}
+CFGVisitor::CFGVisitor() {}
 
-CFGVisitor::~CFGVisitor(){}
+CFGVisitor::~CFGVisitor() {}
 
 antlrcpp::Any CFGVisitor::visitProg(ifccParser::ProgContext* ctx) {
-    cfg.createBlock("name");
-    return antlrcpp::Any();
+    cfg.createBlock("main");
+    ifccBaseVisitor::visitProg(ctx);
+    return 0;
 }
 
 antlrcpp::Any CFGVisitor::visitDeclaration(ifccParser::DeclarationContext* ctx) {
     std::string varname = ctx->IDENTIFIER()->getText();
-    cfg.addToSymbolTable(varname);
-    
+    cfg.createSymbolVar(varname);
+
     if (ctx->expression()) {
-        std::string tmpExpression = visit(ctx->expression());
-        cfg.getCurrentBlock().addInstruction<IR::Copy>(varname, tmpExpression);
+        visit(ctx->expression());
+        cfg.getCurrentBlock().addInstruction<IR::Store>(varname);
     }
-    return antlrcpp::Any();
+    return 0;
 }
 
 antlrcpp::Any CFGVisitor::visitExpr_assign(ifccParser::Expr_assignContext* ctx) {
-    std::string varname = ctx->IDENTIFIER()->getText();    
-    std::string tmpExpr = visit(ctx->expression());
-    cfg.getCurrentBlock().addInstruction<IR::Copy>(varname, tmpExpr);
-    return varname;
+    std::string varname = ctx->IDENTIFIER()->getText();
+    visit(ctx->expression());
+    cfg.getCurrentBlock().addInstruction<IR::Store>(varname);
+    return 0;
 }
 
 antlrcpp::Any CFGVisitor::visitExpr_arithmetic_add(ifccParser::Expr_arithmetic_addContext* ctx) {
-    std::string tmpLHS = visit(ctx->expression(0));
-    std::string tmpRHS = visit(ctx->expression(1));
-    std::string tmpDest = cfg.createTmpvar();
-    cfg.getCurrentBlock().addInstruction<IR::Add>(tmpDest, tmpLHS, tmpRHS);
-    return tmpDest;
+    visit(ctx->expression(0));
+    std::string lhs = cfg.createTmpVar();
+    cfg.getCurrentBlock().addInstruction<IR::Store>(lhs);
+    visit(ctx->expression(1));
+
+    if (ctx->OP_ADD()->getText() == "+") cfg.getCurrentBlock().addInstruction<IR::Add>(lhs);
+    else cfg.getCurrentBlock().addInstruction<IR::Sub>(lhs);
+    return 0;
 }
 antlrcpp::Any CFGVisitor::visitExpr_arithmetic_mult(ifccParser::Expr_arithmetic_multContext* ctx) {
-    std::string tmpLHS = visit(ctx->expression(0));
-    std::string tmpRHS = visit(ctx->expression(1));
-    std::string tmpDest = cfg.createTmpvar();
-    cfg.getCurrentBlock().addInstruction<IR::Mul>(tmpDest, tmpLHS, tmpRHS);
-    return tmpDest;
+    visit(ctx->expression(0));
+    std::string lhs = cfg.createTmpVar();
+    cfg.getCurrentBlock().addInstruction<IR::Store>(lhs);
+    visit(ctx->expression(1));
+
+    auto op = ctx->OP_MULT()->getText();
+    if (op == "*") cfg.getCurrentBlock().addInstruction<IR::Mul>(lhs);
+    else if (op == "/") cfg.getCurrentBlock().addInstruction<IR::Div>(lhs);
+    else cfg.getCurrentBlock().addInstruction<IR::Mod>(lhs);
+    return 0;
 }
 antlrcpp::Any CFGVisitor::visitExpr_arithmetic_add_unary(ifccParser::Expr_arithmetic_add_unaryContext* ctx) {
-    std::string tmpExpr = visit(ctx->expression());
+    visit(ctx->expression());
     if (ctx->OP_ADD()->getText() == "-") {
-        std::string tmpDest = cfg.createTmpvar();
-        cfg.getCurrentBlock().addInstruction<IR::Negate>(tmpDest, tmpExpr);
-        return tmpDest;
+        cfg.getCurrentBlock().addInstruction<IR::Negate>();
     }
-    return tmpExpr;
+    return 0;
 }
 
 antlrcpp::Any CFGVisitor::visitExpr_ident(ifccParser::Expr_identContext* ctx) {
-    return ctx->IDENTIFIER()->getText();
+    std::string varname = ctx->IDENTIFIER()->getText();
+    cfg.getCurrentBlock().addInstruction<IR::LdLoc>(varname);
+    return 0;
 }
 antlrcpp::Any CFGVisitor::visitExpr_const(ifccParser::Expr_constContext* ctx) {
-    std::string tmpConst = cfg.createTmpvar();
     int constValue = std::stoi(ctx->CONST()->getText());
-    cfg.getCurrentBlock().addInstruction<IR::LdConst>(tmpConst, constValue);
-    return tmpConst;
+    cfg.getCurrentBlock().addInstruction<IR::LdConst>(constValue);
+    return 0;
 }
 
 antlrcpp::Any CFGVisitor::visitStmt_jump_return(ifccParser::Stmt_jump_returnContext* ctx) {
-    std::string tmpExpr = visit(ctx->expression());
-    cfg.getCurrentBlock().addInstruction<IR::Return>(tmpExpr);
-    return antlrcpp::Any();
+    visit(ctx->expression());
+    cfg.getCurrentBlock().addInstruction<IR::Return>();
+    return 0;
 }

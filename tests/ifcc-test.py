@@ -270,6 +270,8 @@ for jobname in jobs:
     nb_success+=1
 
 
+
+
 table = tabulate(
     data, 
     headers=["Test Path", "Result", "gcc", "ifcc", "Comment"], 

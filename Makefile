@@ -21,6 +21,9 @@ OBJECTS=$(FILES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 default: all
 all: $(MAIN)
 
+test: $(MAIN)
+	cd tests && python3 ifcc-test.py testfiles
+
 $(MAIN): $(OBJECTS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(LDFLAGS) $(shell find $(BUILD_DIR) -name '*.o') $(LIBS) -o $(MAIN)
@@ -38,13 +41,10 @@ $(GENERATED): $(SRC_DIR)/ifcc.g4
 	cd $(SRC_DIR) && $(ANTLR) -visitor -no-listener -Dlanguage=Cpp -o $(GEN_DIR) ifcc.g4
 
 # prevent automatic cleanup of "intermediate" files like ifccLexer.cpp etc
-.PRECIOUS: $(GENERATED)  
+.PRECIOUS: $(GEN_DIR)  
 
 # Usage: `make gui FILE=path/to/your/file.c`
 FILE ?= ../tests/testfiles/1_return42.c
-
-test:
-	cd tests && python3 ifcc-test.py testfiles
 
 gui:
 	@mkdir -p $(SRC_DIR)/$(GEN_DIR) $(BUILD_DIR)

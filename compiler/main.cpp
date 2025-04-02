@@ -58,5 +58,8 @@ int main(int argn, const char** argv)
     CodeGenVisitor generatorVisitor(symbolsVisitor.getSymbolMap(), symbolsVisitor.getBlockParentBlock());
     generatorVisitor.visit(tree);
 
+    // TODO add arg parser  (-o + default file output)
+    cfgVisitor.getCFG().generateAsm(std::cout);
+
     return 0;
 }

@@ -52,11 +52,11 @@ public:
     void addInstruction(IArgs&&... args) {
         instructions.push_back(std::make_unique<TInst>(*this, args...));
     }
+    
+    void generateAsm(std::ostream& o); // < x86 assembly code generation for this basic block (very simple)
 
-    void getAsm(std::ostream& o); // < x86 assembly code generation for this basic block (very simple)
-
-    // store here the name of the variable that holds the value of expr
-
+    inline ControlFlowGraph& getCFG() { return cfg; }
+    
 protected:
     std::string label; // label of the BB, also will be the label in the generated code
     std::vector<std::unique_ptr<Instruction>> instructions; // the instructions themselves.
