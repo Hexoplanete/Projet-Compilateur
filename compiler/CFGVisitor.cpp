@@ -52,7 +52,7 @@ antlrcpp::Any CFGVisitor::visitExpr_arithmetic_mult(ifccParser::Expr_arithmetic_
     else cfg.getCurrentBlock().addInstruction<IR::Mod>(lhs);
     return 0;
 }
-antlrcpp::Any CFGVisitor::visitExpr_arithmetic_add_unary(ifccParser::Expr_arithmetic_add_unaryContext* ctx) {
+antlrcpp::Any CFGVisitor::visitExpr_arithmetic_unary(ifccParser::Expr_arithmetic_unaryContext* ctx) {
     visit(ctx->expression());
     if (ctx->OP_ADD()->getText() == "-") {
         cfg.getCurrentBlock().addInstruction<IR::Negate>();

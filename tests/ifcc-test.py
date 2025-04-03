@@ -20,6 +20,7 @@ import re
 import shutil
 import sys
 import subprocess
+import itertools
 
 def command(string, logfile=None):
     """execute `string` as a shell command, optionnaly logging stdout+stderr to a file. return exit status.)"""
