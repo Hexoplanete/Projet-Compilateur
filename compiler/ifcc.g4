@@ -18,9 +18,7 @@ expression:
 	IDENTIFIER						# expr_ident
 	| CONST							# expr_const
 	| '(' expression ')'			# expr_arithmetic_par
-	| 'getchar()'					# expr_getchar
-	| 'putchar(' expression ')'		# expr_putchar
-	| (OP_ADD|OP_OR) expression		# expr_arithmetic_unary
+	| (OP_ADD|OP_NOT) expression	# expr_arithmetic_unary
 	| expression OP_MULT expression	# expr_arithmetic_mult
 	| expression OP_ADD expression	# expr_arithmetic_add
 	| expression '&' expression		# expr_arithmetic_bit_and
@@ -43,7 +41,7 @@ stmt_block: '{' stmt* '}';
 
 OP_MULT: [*/%];
 OP_ADD: [+-];
-OP_OR: '!';
+OP_NOT: '!';
 OP_COMP: '<' | '>';
 OP_EQ: '==' | '!=';
 TYPE: 'int';

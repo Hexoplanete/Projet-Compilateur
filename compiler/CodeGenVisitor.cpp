@@ -80,26 +80,26 @@ antlrcpp::Any CodeGenVisitor::visitExpr_const(ifccParser::Expr_constContext* ctx
     return 0;
 }
 
-/*
-    - Move the character to put in the 32-bit general-purpose register (%edi)
-    - Then call putchar
-*/
-antlrcpp::Any CodeGenVisitor::visitExpr_putchar(ifccParser::Expr_putcharContext* ctx)
-{
-    visit(ctx->expression());
-    std::cout << "\tmovl\t%eax, %edi\n";
-    std::cout << "\tcall\tputchar\n";
-    return 0;
-}
+// /*
+//     - Move the character to put in the 32-bit general-purpose register (%edi)
+//     - Then call putchar
+// */
+// antlrcpp::Any CodeGenVisitor::visitExpr_putchar(ifccParser::Expr_putcharContext* ctx)
+// {
+//     visit(ctx->expression());
+//     std::cout << "\tmovl\t%eax, %edi\n";
+//     std::cout << "\tcall\tputchar\n";
+//     return 0;
+// }
 
-/*
-    - Call getchar and put its value in !reg (%eax)
-*/
-antlrcpp::Any CodeGenVisitor::visitExpr_getchar(ifccParser::Expr_getcharContext* ctx)
-{
-    std::cout << "\tcall\tgetchar\n";
-    return 0;
-}
+// /*
+//     - Call getchar and put its value in !reg (%eax)
+// */
+// antlrcpp::Any CodeGenVisitor::visitExpr_getchar(ifccParser::Expr_getcharContext* ctx)
+// {
+//     std::cout << "\tcall\tgetchar\n";
+//     return 0;
+// }
 
 
 /*
@@ -113,7 +113,7 @@ antlrcpp::Any CodeGenVisitor::visitExpr_arithmetic_unary(ifccParser::Expr_arithm
     visit(ctx->expression());
     if (ctx->OP_ADD() && ctx->OP_ADD()->getText() == "-")
         std::cout << "\tnegl\t%eax\n";
-    else if (ctx->OP_OR()) {
+    else if (ctx->OP_NOT()) {
         std::cout << "\tcmpl\t$0, %eax\n";
         std::cout << "\tsete\t%al\n";
         std::cout << "\tmovzbl\t%al, %eax\n";

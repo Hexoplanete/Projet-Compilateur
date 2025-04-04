@@ -18,7 +18,7 @@ class Instruction {
 public:
     //  Actual code generation
     virtual void generateAsm(std::ostream& o) const = 0;
-    std::string reg() const;
+    static std::string reg();
 
     std::string varToAsm(std::string var) const;
 
@@ -110,6 +110,93 @@ class Negate : public Instruction {
 public:
     Negate(BasicBlock& block) : Instruction(block) {}
     void generateAsm(std::ostream& o) const override;
+};
+
+class LogicalNot : public Instruction {
+public:
+    LogicalNot(BasicBlock& block) : Instruction(block) {}
+    void generateAsm(std::ostream& o) const override;
+};
+
+class BitAnd : public Instruction {
+public:
+    BitAnd(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
+
+private:
+    std::string lhs;
+};
+
+class BitXor : public Instruction {
+public:
+    BitXor(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
+
+private:
+    std::string lhs;
+};
+
+class BitOr : public Instruction {
+public:
+    BitOr(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
+
+private:
+    std::string lhs;
+};
+
+class CompGt : public Instruction {
+public:
+    CompGt(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
+
+private:
+    std::string lhs;
+};
+
+class CompLt : public Instruction {
+public:
+    CompLt(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
+
+private:
+    std::string lhs;
+};
+
+class CompGtEq : public Instruction {
+public:
+    CompGtEq(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
+
+private:
+    std::string lhs;
+};
+
+class CompLtEq : public Instruction {
+public:
+    CompLtEq(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
+
+private:
+    std::string lhs;
+};
+
+class CompEq : public Instruction {
+public:
+    CompEq(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
+
+private:
+    std::string lhs;
+};
+
+class CompNe : public Instruction {
+public:
+    CompNe(BasicBlock& block, std::string lhs) : Instruction(block), lhs(lhs) {}
+    void generateAsm(std::ostream& o) const override;
+
+private:
+    std::string lhs;
 };
 
 class Return : public Instruction {
