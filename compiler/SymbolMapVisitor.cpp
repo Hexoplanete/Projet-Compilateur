@@ -98,7 +98,7 @@ void SymbolMapVisitor::useVariable(std::string name)
     for (int i = _contextSymbolMaps.size() - 1; i >= 0; i--) {
         const auto& symbolMap = _contextSymbolMaps[i];
         auto& unused = _contextUnusedSymbols.at(i);
-        if (symbolMap.find(name) != symbolMap.end()) continue;
+        if (symbolMap.empty() || symbolMap.find(name) == symbolMap.end()) continue;
         unused.erase(name);
         return;
     }
