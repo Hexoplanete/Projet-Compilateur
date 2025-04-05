@@ -1,8 +1,10 @@
 #include "Block.h"
 
-IR::BasicBlock::BasicBlock(ControlFlowGraph& cfg, std::string label) :cfg(cfg), label(label), exitTrue(nullptr), exitFalse(nullptr) {}
+using namespace IR;
 
-void IR::BasicBlock::generateAsm(std::ostream& o)
+BasicBlock::BasicBlock(ControlFlowGraph& cfg, std::string label) :cfg(cfg), label(label), exitTrue(nullptr), exitFalse(nullptr) {}
+
+void BasicBlock::generateAsm(std::ostream& o)
 {
     o << "." << label << ":" << "\n";
     for (auto&& inst : instructions) {

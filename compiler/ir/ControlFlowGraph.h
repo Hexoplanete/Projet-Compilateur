@@ -16,6 +16,11 @@ namespace IR {
      (again it could be identified in a more explicit way)
 `
 */
+struct Variable {
+    Variable(std::string name, int offset) : name(name), offset(offset) {}
+    std::string name;
+    int offset;
+};
 
 class ControlFlowGraph {
 public:
@@ -24,7 +29,7 @@ public:
 
     template<typename... BArgs>
     BasicBlock& createBlock(std::string name) {
-        blocks.push_back(std::make_unique<BasicBlock>(*this, name));
+        _blocks.push_back(std::make_unique<BasicBlock>(*this, name));
         return getCurrentBlock();
     }
 
@@ -33,28 +38,29 @@ public:
     void generateAsmPrologue(std::ostream& o) const;
     void generateAsmBody(std::ostream& o) const;
     void generateAsmEpilogue(std::ostream& o) const;
-    std::string varToAsm(std::string variable) const; // helper method: inputs a IR reg or input variable, returns e.g. "-24(%rbp)" for the proper value of 24
 
     // symbol table methods
-    void createSymbolVar(std::string name /*, Type t*/);
-    std::string createTmpVar(/*Type t*/);
-    // Type getVarType(std::string name);
+    void pushContext();
+    void popContext();
+    const Variable& createSymbolVar(std::string name /*, Type t*/);
+    const Variable& getSymbolVar(std::string name);
+    const Variable& createTmpVar(/*Type t*/);
 
     BasicBlock& getCurrentBlock() const;
-    // basic block management
-    // std::string new_BB_name();
     
 protected:
     int reserveSpace(int size);
-    // std::map<std::string, Type> SymbolType; // part of the symbol table
-    std::map<std::string, int> symbolIndex; // part of the symbol table
-    std::map<std::string, int> tmpIndex; // part of the temporary symbol table
-    int memoryTop; // to allocate new symbols in the symbol table
+    // TODO : edit symbol map to contain variable types (int, char, double...)
+    std::vector<Variable> _symbols;
+    int _memoryTop; // to allocate new symbols in the symbol table
+    std::vector<std::map<std::string, Variable*>> _contextSymbolMaps; // part of the symbol table
+    std::vector<std::map<std::string, Variable*>> _contextTmpMaps; // part of the temporary symbol table
+    int _tmpCount; // just for naming
 
 
-    std::vector<std::unique_ptr<BasicBlock>> blocks; // all the basic blocks of this CF
-    int nextBBnumber; // just for naming
-    BasicBlock* current_bb;
+    std::vector<std::unique_ptr<BasicBlock>> _blocks; // all the basic blocks of this CF
+    int _nextBlocknumber; // just for naming
+    BasicBlock* _currentBB;
 };
 
 }

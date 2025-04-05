@@ -8,7 +8,8 @@ public:
     CFGVisitor();
     ~CFGVisitor();
 
-    virtual antlrcpp::Any visitProg(ifccParser::ProgContext* ctx) override;
+    virtual antlrcpp::Any visitMain(ifccParser::MainContext* ctx) override;
+
     virtual antlrcpp::Any visitDeclaration(ifccParser::DeclarationContext* ctx) override;
     virtual antlrcpp::Any visitExpr_assign(ifccParser::Expr_assignContext* ctx) override;
 
@@ -24,11 +25,11 @@ public:
     virtual antlrcpp::Any visitExpr_ident(ifccParser::Expr_identContext* ctx) override;
     virtual antlrcpp::Any visitExpr_const(ifccParser::Expr_constContext* ctx) override;
     
-    // virtual antlrcpp::Any visitStmt_block(ifccParser::Stmt_blockContext *ctx) override;
+    virtual antlrcpp::Any visitStmt_block(ifccParser::Stmt_blockContext *ctx) override;
 
     virtual antlrcpp::Any visitStmt_jump_return(ifccParser::Stmt_jump_returnContext *ctx) override;
 
-    std::string visitAndStoreExpr(ifccParser::ExpressionContext* ctx);
+    const IR::Variable& visitAndStoreExpr(ifccParser::ExpressionContext* ctx);
 
     inline IR::ControlFlowGraph& getCFG() { return cfg; }
 private:

@@ -5,23 +5,22 @@
 
 using namespace IR;
 
-std::string Instruction::reg()
-{
+std::string reg() {
     return "%eax";
 }
 
-void generateAsmComp(BasicBlock& block, std::ostream& o, const std::string& lhs) {
-    o << "\tcmpl\t" << Instruction::reg() << ", " <<  block.getCFG().varToAsm(lhs) << "\n";
+void generateAsmComp(const Instruction& inst, std::ostream& o, const Variable& lhs) {
+    o << "\tcmpl\t" << reg() << ", " << inst.varToAsm(lhs) << "\n";
 }
 
-void generateAsmCompFlags(std::ostream& o, const std::string& reg) {
-    o << "\tandb\t$1, " << reg << "\n";
-    o << "\tmovzbl\t" << reg << ", " << Instruction::reg() << "\n";
+void generateAsmCompFlags(std::ostream& o, const std::string& var) {
+    o << "\tandb\t$1, " << var << "\n";
+    o << "\tmovzbl\t" << var << ", " << reg() << "\n";
 }
 
-std::string Instruction::varToAsm(std::string var) const
+std::string Instruction::varToAsm(const Variable& variable) const
 {
-    return block.getCFG().varToAsm(var);
+    return std::to_string(variable.offset) + "(%rbp)";
 }
 
 void LdConst::generateAsm(std::ostream& o) const
@@ -98,41 +97,41 @@ void BitOr::generateAsm(std::ostream& o) const
 
 void CompGt::generateAsm(std::ostream& o) const
 {
-    generateAsmComp(block, o, lhs);
+    generateAsmComp(*this, o, lhs);
     o << "\tsetg\t%al\n";
     generateAsmCompFlags(o, "%al");
 }
 
 void CompLt::generateAsm(std::ostream& o) const
 {
-    generateAsmComp(block, o, lhs);
+    generateAsmComp(*this, o, lhs);
     o << "\tsetl\t%al\n";
     generateAsmCompFlags(o, "%al");
 }
 
 void CompGtEq::generateAsm(std::ostream& o) const
 {
-    generateAsmComp(block, o, lhs);
+    generateAsmComp(*this, o, lhs);
     o << "\tsetge\t%al\n";
     generateAsmCompFlags(o, "%al");
 }
 
 void CompLtEq::generateAsm(std::ostream& o) const
 {
-    generateAsmComp(block, o, lhs);
+    generateAsmComp(*this, o, lhs);
     o << "\tsetle\t%al\n";
     generateAsmCompFlags(o, "%al");
 }
 
 void CompEq::generateAsm(std::ostream& o) const
 {
-    generateAsmComp(block, o, lhs);
+    generateAsmComp(*this, o, lhs);
     o << "\tsete\t%al\n";
     generateAsmCompFlags(o, "%al");
 }
 void CompNe::generateAsm(std::ostream& o) const
 {
-    generateAsmComp(block, o, lhs);
+    generateAsmComp(*this, o, lhs);
     o << "\tsetne\t%al\n";
     generateAsmCompFlags(o, "%al");
 }
@@ -140,10 +139,3 @@ void CompNe::generateAsm(std::ostream& o) const
 void Return::generateAsm(std::ostream& o) const
 {
 }
-
-// CompGt
-// CompLt
-// CompGtEq
-// CompLtEq
-// CompEq
-// CompNe
