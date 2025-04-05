@@ -1,7 +1,9 @@
 .vscode/
 compiler/.antlr/
-compiler/build/
-compiler/generated/
-compiler/ifcc
-tests/ifcc-test-output
 .DS_Store
+
+compiler/generated/
+build/
+ifcc
+
+tests/ifcc-test-output

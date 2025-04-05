@@ -9,58 +9,25 @@
 */
 antlrcpp::Any SymbolMapVisitor::visitProg(ifccParser::ProgContext* ctx)
 {
-    _symbolMap.clear();
-    _unusedSymbols.clear();
-    _blockParentMap.clear();
-    _currentAddress.clear();
-    _parentFunction.clear();
-
-    visitChildren(ctx);
-
-    //CHANGEa
-    for(std::map<std::string, std::set<std::string>>::iterator it = _unusedSymbols.begin(); it != _unusedSymbols.end(); ++it) {
-        if (!it->second.empty()) {
-            std::cerr << "error: Unused variable detected : ";
-            for (const auto& symbol : it->second) std::cerr << symbol << " ";
-            std::cerr << std::endl;
-        }
-    }
-
+    _contextSymbolMaps.clear();
+    _contextUnusedSymbols.clear();
+    ifccBaseVisitor::visitProg(ctx);
     return 0;
 }
 
 antlrcpp::Any SymbolMapVisitor::visitMain(ifccParser::MainContext* ctx)
 {
-    _blockParentMap["main"] = _currentBlock;
-    _currentBlock = "main";
-    _symbolMap["main"].clear();
-    _currentAddress["main"] = 0;
-    _parentFunction["main"] = "main";
-    visitChildren(ctx);
-    _currentBlock = _blockParentMap[_currentBlock];
+    pushContext();
+    ifccBaseVisitor::visitMain(ctx);
+    popContext();
     return 0;
 }
 
 antlrcpp::Any SymbolMapVisitor::visitStmt_block(ifccParser::Stmt_blockContext* ctx)
 {
-    std::string blockNumber = "block" + std::to_string(_blockCount++);
-    _parentFunction[blockNumber] = _parentFunction[_currentBlock];
-    _blockParentMap[blockNumber] = _currentBlock;
-    _currentBlock = blockNumber;
-    _symbolMap[blockNumber].clear();
-    visitChildren(ctx);
-    _currentBlock = _blockParentMap[_currentBlock];
-    return 0;
-}
-
-/*
-    - From the the 'TYPE' in a 'TYPE IDENT = EXPRESSION' declaration, deduces the size of the variable to be declared
-    - Visits the children of the declaration statement so that the variable can be added to the symbol table
-*/
-antlrcpp::Any SymbolMapVisitor::visitStmt_declaration(ifccParser::Stmt_declarationContext* ctx)
-{
-    _currentStmtDeclarationSize = 4; // We only work with int for now
-    visitChildren(ctx);
+    pushContext();
+    ifccBaseVisitor::visitStmt_block(ctx);
+    popContext();
     return 0;
 }
 
@@ -73,116 +40,8 @@ antlrcpp::Any SymbolMapVisitor::visitStmt_declaration(ifccParser::Stmt_declarati
 antlrcpp::Any SymbolMapVisitor::visitDeclaration(ifccParser::DeclarationContext* ctx)
 {
     std::string varname = ctx->IDENTIFIER()->getText();
-    if (_symbolMap[_currentBlock].find(varname) != _symbolMap[_currentBlock].end()) {
-        std::cerr << "error: Variable already defined." << std::endl;
-        exit(1);
-    }
-    addVariable(varname, _currentStmtDeclarationSize);
-
+    addVariable(varname);
     visitChildren(ctx);
-    return 0;
-}
-
-/*
-    - Creates a temporary variable '@tmpX' in the symbol table, used later during assembly code generation
-    - Visits both left and right expressions to add their own variables to the symbol table
-*/
-antlrcpp::Any SymbolMapVisitor::visitExpr_arithmetic_add(ifccParser::Expr_arithmetic_addContext* ctx)
-{
-    addVariable("@tmp" + std::to_string(_tmpCount), 4, true); // TODO Use the actual size of the variable instead of 4
-    _tmpCount++;
-
-    visit(ctx->expression(0));
-    visit(ctx->expression(1));
-    return 0;
-}
-
-/*
-    - Creates a temporary variable '@tmpX' in the symbol table, used later during assembly code generation
-    - Creates another temporary variable '@tmpY' in the symbol table in the case of a division or modulo
-    - Visits both left and right expressions to add their own variables to the symbol table
-*/
-antlrcpp::Any SymbolMapVisitor::visitExpr_arithmetic_mult(ifccParser::Expr_arithmetic_multContext* ctx)
-{
-    addVariable("@tmp" + std::to_string(_tmpCount), 4, true);
-    _tmpCount++;
-    if (ctx->OP_MULT()->getText() != "*") {
-        addVariable("@tmp" + std::to_string(_tmpCount), 4, true);
-        _tmpCount++;
-    }
-    
-    visit(ctx->expression(0));
-    visit(ctx->expression(1));
-    return 0;
-}
-
-/*
-    - Creates a temporary variable '@tmpX' in the symbol table, used later during assembly code generation
-    - Visits both left and right expressions to add their own variables to the symbol table
-*/
-antlrcpp::Any SymbolMapVisitor::visitExpr_arithmetic_bit_and(ifccParser::Expr_arithmetic_bit_andContext* ctx)
-{
-    addVariable("@tmp" + std::to_string(_tmpCount), 4, true); // TODO Use the actual size of the variable instead of 4
-    _tmpCount++;
-
-    visit(ctx->expression(0));
-    visit(ctx->expression(1));
-    return 0;
-}
-
-/*
-    - Creates a temporary variable '@tmpX' in the symbol table, used later during assembly code generation
-    - Visits both left and right expressions to add their own variables to the symbol table
-*/
-antlrcpp::Any SymbolMapVisitor::visitExpr_arithmetic_bit_xor(ifccParser::Expr_arithmetic_bit_xorContext* ctx)
-{
-    addVariable("@tmp" + std::to_string(_tmpCount), 4, true); // TODO Use the actual size of the variable instead of 4
-    _tmpCount++;
-
-    visit(ctx->expression(0));
-    visit(ctx->expression(1));
-    return 0;
-}
-
-/*
-    - Creates a temporary variable '@tmpX' in the symbol table, used later during assembly code generation
-    - Visits both left and right expressions to add their own variables to the symbol table
-*/
-antlrcpp::Any SymbolMapVisitor::visitExpr_arithmetic_bit_or(ifccParser::Expr_arithmetic_bit_orContext* ctx)
-{
-    addVariable("@tmp" + std::to_string(_tmpCount), 4, true); // TODO Use the actual size of the variable instead of 4
-    _tmpCount++;
-
-    visit(ctx->expression(0));
-    visit(ctx->expression(1));
-    return 0;
-}
-
-/*
-    - Creates a temporary variable '@tmpX' in the symbol table, used later during assembly code generation
-    - Visits both left and right expressions to add their own variables to the symbol table
-*/
-antlrcpp::Any SymbolMapVisitor::visitExpr_compare(ifccParser::Expr_compareContext* ctx)
-{
-    addVariable("@tmp" + std::to_string(_tmpCount), 4, true); // TODO Use the actual size of the variable instead of 4
-    _tmpCount++;
-
-    visit(ctx->expression(0));
-    visit(ctx->expression(1));
-    return 0;
-}
-
-/*
-    - Creates a temporary variable '@tmpX' in the symbol table, used later during assembly code generation
-    - Visits both left and right expressions to add their own variables to the symbol table
-*/
-antlrcpp::Any SymbolMapVisitor::visitExpr_equal(ifccParser::Expr_equalContext* ctx)
-{
-    addVariable("@tmp" + std::to_string(_tmpCount), 4, true); // TODO Use the actual size of the variable instead of 4
-    _tmpCount++;
-
-    visit(ctx->expression(0));
-    visit(ctx->expression(1));
     return 0;
 }
 
@@ -194,17 +53,28 @@ antlrcpp::Any SymbolMapVisitor::visitExpr_equal(ifccParser::Expr_equalContext* c
 antlrcpp::Any SymbolMapVisitor::visitExpr_ident(ifccParser::Expr_identContext* ctx)
 {
     std::string varname = ctx->IDENTIFIER()->getText();
-    std::string block(_currentBlock);
-    while (block.compare("")){
-        if (_symbolMap[block].find(varname) != _symbolMap[block].end()) {
-            //CHANGERa
-            _unusedSymbols[block].erase(varname);
-            return 0;
-        }
-        block = _blockParentMap[block];
+    useVariable(varname);
+    return 0;
+}
+
+
+
+void SymbolMapVisitor::pushContext()
+{
+    _contextSymbolMaps.push_back(std::set<std::string>());
+    _contextUnusedSymbols.push_back(std::set<std::string>());
+}
+
+void SymbolMapVisitor::popContext()
+{
+    const auto& unused = _contextUnusedSymbols[_contextUnusedSymbols.size() - 1];
+    if (unused.empty()) {
+        std::cerr << "error: Unused variable detected : ";
+        for (const auto& symbol : unused) std::cerr << symbol << " ";
+        std::cerr << std::endl;
     }
-    std::cerr << "error: Undefined variable." << std::endl;
-    exit(1);
+    _contextSymbolMaps.pop_back();
+    _contextUnusedSymbols.pop_back();
 }
 
 /*
@@ -212,9 +82,26 @@ antlrcpp::Any SymbolMapVisitor::visitExpr_ident(ifccParser::Expr_identContext* c
     - Creates a new line in the symbol table, associating the variable name to a memory address
     - Adds the freshly-created variable to the list of unused table
 */
-void SymbolMapVisitor::addVariable(std::string name, int size, bool used)
-{    
-    _currentAddress[_parentFunction[_currentBlock]] -= size;
-    _symbolMap[_currentBlock][name] = _currentAddress[_parentFunction[_currentBlock]];
-    if (!used) _unusedSymbols[_currentBlock].insert(name);
+void SymbolMapVisitor::addVariable(std::string name)
+{
+    auto& currentMap = _contextSymbolMaps[_contextSymbolMaps.size() - 1];
+    if (!currentMap.empty() && currentMap.find(name) != currentMap.end()) {
+        std::cerr << "error: Variable already defined." << std::endl;
+        exit(1);
+    }
+    currentMap.insert(name);
+    _contextUnusedSymbols[_contextUnusedSymbols.size() - 1].insert(name);
+}
+
+void SymbolMapVisitor::useVariable(std::string name)
+{
+    for (int i = _contextSymbolMaps.size() - 1; i >= 0; i--) {
+        const auto& symbolMap = _contextSymbolMaps[i];
+        auto& unused = _contextUnusedSymbols.at(i);
+        if (symbolMap.empty() || symbolMap.find(name) == symbolMap.end()) continue;
+        unused.erase(name);
+        return;
+    }
+    std::cerr << "error: Undefined variable." << std::endl;
+    exit(1);
 }

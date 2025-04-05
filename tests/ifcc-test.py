@@ -16,10 +16,10 @@
 
 import argparse
 import os
+import re
 import shutil
 import sys
 import subprocess
-from tabulate import tabulate
 import itertools
 
 def command(string, logfile=None):
@@ -270,11 +270,39 @@ for jobname in jobs:
     nb_success+=1
 
 
-table = tabulate(
-    data, 
-    headers=["Test Path", "Result", "gcc", "ifcc", "Comment"], 
-    tablefmt="grid"
-)
+def tabulate(data:list[list[str]], headers: list[str], /):
+    lines = []
+    col_width = [len(i) for i in headers]
+    align = ['<' for _ in headers]
+    for line in data:
+        for i, entry in enumerate(line):
+            if type(entry) is not str:
+                align[i] = '>'
+                entry = str(entry)
+            else:
+                entry = re.sub(r'\033\[(\d|;)+?m', '', entry)
+            col_width[i] = max(col_width[i], len(entry))
+    
+    sep = "+-" + "-+-".join(['-'*w for w in col_width]) + "-+"
+    def format_line(line: list):
+        entries = []
+        for (entry, a, w) in zip(line, align, col_width):
+            if type(entry) is str:
+                raw_entry = re.sub(r'\033\[(\d|;)+?m', '', entry)
+                w += len(entry) - len(raw_entry)
+            entries.append(f"{{0: {a}{w}}}".format(entry))
+        return "| " + " | ".join(entries) + " |"
+    
+    lines.append(sep)
+    lines.append(format_line(headers))
+    lines.append(sep.replace('-','='))
+    for line in data:
+        lines.append(format_line(line))
+        lines.append(sep)
+
+    return "\n".join(lines)
+
+table = tabulate(data, ["Test Path", "Result", "gcc", "ifcc", "Comment"])
 print()
 print(table)
 print("SUMMARY: "+str(nb_success)+" tests passed, "+str(nb_failure)+" tests failed, "+ str(nb_jobs)+" tests total")
