@@ -52,7 +52,6 @@ const Variable& ControlFlowGraph::createSymbolVar(std::string name)
 {
     Variable& variable = _symbols.emplace_back(name, reserveSpace(4));
     _contextSymbolMaps[_contextSymbolMaps.size() - 1][name] = &variable;
-    std::cout << std::to_string(_memoryTop) << std::endl;
     return variable;
 }
 
@@ -61,7 +60,6 @@ const Variable& ControlFlowGraph::createTmpVar()
     std::string name = "!" + std::to_string(_tmpCount++);
     Variable& variable = _symbols.emplace_back(name, reserveSpace(4));
     _contextTmpMaps[_contextTmpMaps.size() - 1][name] = &variable;
-    std::cout << std::to_string(_memoryTop) << std::endl;
     return variable;
 }
 
