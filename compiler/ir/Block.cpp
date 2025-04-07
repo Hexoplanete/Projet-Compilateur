@@ -6,7 +6,7 @@ BasicBlock::BasicBlock(ControlFlowGraph& cfg, std::string label) :cfg(cfg), labe
 
 void BasicBlock::generateAsm(std::ostream& o)
 {
-    o << "." << label << ":" << "\n";
+    o << label << ":" << "\n";
     for (auto&& inst : instructions) {
         inst.get()->generateAsm(o);
     }

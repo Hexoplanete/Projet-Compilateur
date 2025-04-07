@@ -29,7 +29,7 @@ public:
 
     template<typename... BArgs>
     BasicBlock& createBlock(std::string label = "") {
-        static int _nextBlocknumber; // just for naming
+        static int _nextBlocknumber = 0; // just for naming
         if (label == "") label = ".L" + std::to_string(_nextBlocknumber++);
         _blocks.push_back(std::make_unique<BasicBlock>(*this, label));
         return getCurrentBlock();

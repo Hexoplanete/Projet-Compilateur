@@ -18,8 +18,6 @@ expression:
 	IDENTIFIER							# expr_ident
 	| CONST								# expr_const
 	| '(' expression ')'				# expr_arithmetic_par
-	| 'getchar()'						# expr_getchar
-	| 'putchar(' expression ')'			# expr_putchar
 	| IDENTIFIER OP_INCR 				# expr_post_incr
 	| (OP_ADD|OP_NOT) expression		# expr_arithmetic_unary
 	| expression OP_MULT expression		# expr_arithmetic_mult
@@ -30,6 +28,8 @@ expression:
 	| OP_INCR IDENTIFIER 				# expr_pre_incr
 	| expression OP_COMP expression		# expr_compare	
 	| expression OP_EQ expression		# expr_equal
+	| expression '&&' expression	# expr_arithmetic_lazy_and
+	| expression '||' expression	# expr_arithmetic_lazy_or
 	| IDENTIFIER '=' expression			# expr_assign
 	| IDENTIFIER OP_AFF_ADD expression 	# expr_arithmetic_aff_add;
 
