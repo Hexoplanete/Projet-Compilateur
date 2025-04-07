@@ -2,9 +2,11 @@ grammar ifcc;
 
 axiom: prog EOF;
 
-prog: main;
+prog: function_def*;
 
-main: 'int' 'main' '(' ')' '{' stmt* stmt_jump '}';
+function_def: TYPE IDENTIFIER '(' (TYPE declaration (',' TYPE declaration)*)? ')' '{' stmt* '}';
+
+stmt_block: '{' stmt* '}';
 
 stmt:
 	stmt_declaration | stmt_expression | stmt_jump | stmt_block | stmt_if | stmt_while;
@@ -35,7 +37,6 @@ expression:
 
 stmt_jump: RETURN expression? ';' # stmt_jump_return;
 
-stmt_block: '{' stmt* '}';
 // const_expr:
 // 	INTEGER
 // 	| CHAR

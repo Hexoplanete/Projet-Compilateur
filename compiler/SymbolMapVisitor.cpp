@@ -11,17 +11,41 @@ antlrcpp::Any SymbolMapVisitor::visitProg(ifccParser::ProgContext* ctx)
 {
     _contextSymbolMaps.clear();
     _contextUnusedSymbols.clear();
+    _functions.clear();
     ifccBaseVisitor::visitProg(ctx);
     return 0;
 }
 
-antlrcpp::Any SymbolMapVisitor::visitMain(ifccParser::MainContext* ctx)
+
+antlrcpp::Any SymbolMapVisitor::visitFunction_def(ifccParser::Function_defContext* ctx)
 {
     pushContext();
-    ifccBaseVisitor::visitMain(ctx);
+    std::string funcName(ctx->IDENTIFIER()->getText());
+    if (_functions.find(funcName) != _functions.end()) {
+        std::cerr << "error: Function " << funcName << " already defined." << std::endl;
+        exit(1);
+    }
+    _functions.insert(funcName);
+
+    // Liste des types
+    auto types = ctx->TYPE();
+    // Liste des identifiants (paramètres)
+    auto declarations = ctx->declaration();
+    if (!types.empty() && !declarations.empty()) {
+        int i;
+        for (i = 0; i < types.size(); ++i) {
+            visitChildren(declarations[i]);
+        }
+        
+        // Visiter le corps de la fonction
+        for (auto stmt : ctx->stmt()) {
+            visitStmt(stmt);  // Appelle le visiteur sur chaque statement
+        }
+    }
     popContext();
     return 0;
 }
+
 
 antlrcpp::Any SymbolMapVisitor::visitStmt_block(ifccParser::Stmt_blockContext* ctx)
 {

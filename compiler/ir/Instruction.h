@@ -28,6 +28,17 @@ protected:
     // Type t;
 };
 
+class GenFunc : public Instruction {
+    public:
+        GenFunc(BasicBlock& block, const std::string str) : Instruction(block), name(str) {}
+        GenFunc(BasicBlock& block, const std::string str , const std::vector<Variable>& loc) : Instruction(block), name(str), varList(loc) {}
+        void generateAsm(std::ostream& o) const override;
+    
+    private:
+        std::string name;
+        std::vector<Variable> varList;
+};
+
 class LdConst : public Instruction {
 public:
     LdConst(BasicBlock& block, int constValue) : Instruction(block), value(constValue) {}

@@ -8,7 +8,8 @@ public:
     CFGVisitor();
     ~CFGVisitor();
 
-    virtual antlrcpp::Any visitMain(ifccParser::MainContext* ctx) override;
+    virtual antlrcpp::Any visitProg(ifccParser::ProgContext* ctx) override;
+    virtual antlrcpp::Any visitFunction_def(ifccParser::Function_defContext* ctx) override;
     virtual antlrcpp::Any visitStmt_if(ifccParser::Stmt_ifContext* ctx) override;
     virtual antlrcpp::Any visitStmt_then(ifccParser::Stmt_thenContext* ctx) override;
     virtual antlrcpp::Any visitStmt_else(ifccParser::Stmt_elseContext* ctx) override;

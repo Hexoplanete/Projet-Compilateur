@@ -27,6 +27,23 @@ std::string Instruction::varToAsm(const Variable& variable) const
     return std::to_string(variable.offset) + "(%rbp)";
 }
 
+void GenFunc::generateAsm(std::ostream& o) const
+{
+    if (!name.compare("main")){
+        o << "\t# prologue:\n";
+        o << "\tpushq\t%rbp # save %rbp on the stack\n";
+        o << "\tmovq\t%rsp, %rbp # define %rbp for the current function\n\n";
+        return;
+    }
+    o << "\t# prologue:\n";
+    o << "\tpushq\t%rbp # save %rbp on the stack\n";
+    o << "\tmovq\t%rsp, %rbp # define %rbp for the current function\n\n";
+
+    std::vector<std::string> registre = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
+    for (int i = 0; i < varList.size() && i < 6; ++i)
+        std::cout << "\tmovl\t" << registre[i] << ", " << varToAsm(varList[i]) << "\n";
+}
+
 void LdConst::generateAsm(std::ostream& o) const
 {
     o << "\tmovl\t$" << std::to_string(value) << ", " << reg() << "\n";
@@ -142,6 +159,8 @@ void CompNe::generateAsm(std::ostream& o) const
 
 void Return::generateAsm(std::ostream& o) const
 {
+    o << "\tpopq\t%rbp # restore %rbp from the stack\n";
+    o << "\tret # return to the caller (here the shell)" << std::endl;
 }
 
 void IR::Br::generateAsm(std::ostream& o) const

@@ -1,5 +1,5 @@
 #include "Block.h"
-
+#include "ControlFlowGraph.h"
 using namespace IR;
 
 BasicBlock::BasicBlock(ControlFlowGraph& cfg, std::string label) :cfg(cfg), label(label), exitTrue(nullptr), exitFalse(nullptr) {}

@@ -12,8 +12,8 @@ public:
     // This method only parses the grammar elements which lead to a modification of the symbol map and/or the used symbol map
     virtual antlrcpp::Any visitProg(ifccParser::ProgContext* ctx) override;
 
-
-    virtual antlrcpp::Any visitMain(ifccParser::MainContext* ctx) override;
+    virtual antlrcpp::Any visitFunction_def(ifccParser::Function_defContext* ctx) override;
+    
     virtual antlrcpp::Any visitStmt_block(ifccParser::Stmt_blockContext* ctx) override;
 
     // Those methods generate non-temporary variables
@@ -29,4 +29,6 @@ public:
 private:
     std::vector<std::set<std::string>> _contextSymbolMaps; // The symbol table associates a block name and a variable names to their location in the allocated memory.
     std::vector<std::set<std::string>> _contextUnusedSymbols;
+    
+    std::set<std::string> _functions; // Set with all the names of all functions
 };

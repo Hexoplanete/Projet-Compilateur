@@ -45,11 +45,13 @@ public:
     void pushContext();
     void popContext();
     const Variable& createSymbolVar(std::string name /*, Type t*/);
+    const Variable& createSymbolVar(std::string name, int address /*, Type t*/);
     const Variable& getSymbolVar(std::string name);
     const Variable& createTmpVar(/*Type t*/);
 
     BasicBlock& getCurrentBlock() const;
     
+    inline void resetMemoryCount() { _memoryTop = 0; _tmpCount = 0; }
 protected:
     int reserveSpace(int size);
     // TODO : edit symbol map to contain variable types (int, char, double...)

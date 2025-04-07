@@ -6,11 +6,55 @@ CFGVisitor::CFGVisitor() {}
 
 CFGVisitor::~CFGVisitor() {}
 
-antlrcpp::Any CFGVisitor::visitMain(ifccParser::MainContext* ctx) {
-    cfg.createBlock();
+antlrcpp::Any CFGVisitor::visitProg(ifccParser::ProgContext* ctx) {
+    visitChildren(ctx);
+    return 0;
+}
+
+antlrcpp::Any CFGVisitor::visitFunction_def(ifccParser::Function_defContext* ctx) {
+    cfg.resetMemoryCount();
+    std::string name(ctx->IDENTIFIER()->getText());
+    std::string signature(name);
 
     cfg.pushContext(); // TODO update when we do functions
-    ifccBaseVisitor::visitMain(ctx);
+
+    if (!name.compare("main")){
+        cfg.createBlock(name);
+        cfg.getCurrentBlock().addInstruction<IR::GenFunc>(name);
+    }
+    else {
+        // Liste des types
+        auto types = ctx->TYPE();
+        // Liste des identifiants (paramètres)
+        auto declarations = ctx->declaration();
+
+        std::vector<IR::Variable> varList;
+        varList.clear();
+        if (!types.empty() && !declarations.empty()) {
+            int i;
+            for (i = 0; i < types.size() && i < 6; ++i)
+                varList.push_back(cfg.createSymbolVar(declarations[i]->IDENTIFIER()->getText()));
+            int addressPos = 8;
+            for (; i < types.size(); ++i) {
+                addressPos += 8;
+                varList.push_back(cfg.createSymbolVar(declarations[i]->IDENTIFIER()->getText(), addressPos));
+            }
+        }
+        signature += "(";
+        if (!varList.empty())
+            signature += "int";
+        for (int i = 1; i < varList.size(); ++i)
+            signature += ", int";
+        signature += ")";
+
+        cfg.createBlock(signature);
+        cfg.getCurrentBlock().addInstruction<IR::GenFunc>(name, varList);
+    }
+
+    // Visiter le corps de la fonction
+    for (auto stmt : ctx->stmt()) {
+        visitStmt(stmt);  // Appelle le visiteur sur chaque statement
+    }
     cfg.popContext();
     return 0;
 }
