@@ -11,5 +11,21 @@ void BasicBlock::generateAsm(std::ostream& o)
         inst.get()->generateAsm(o);
     }
 
-    // TODO branch if needed
+    if (exitTrue) addInstruction<BrTrue>(*exitTrue);
+    addInstruction<Br>(*exitFalse);
+}
+void IR::BasicBlock::setExit(BasicBlock& block)
+{
+    exitTrue = nullptr;
+    exitFalse = &block;
+}
+
+void IR::BasicBlock::setExitTrue(BasicBlock& block)
+{
+    exitTrue = &block;
+}
+
+void IR::BasicBlock::setExitFalse(BasicBlock& block)
+{
+    exitFalse = &block;
 }

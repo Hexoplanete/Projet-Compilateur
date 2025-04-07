@@ -194,6 +194,23 @@ private:
     const Variable& lhs;
 };
 
+class BrTrue : public Instruction {
+public:
+    BrTrue(BasicBlock& block, BasicBlock& target) : Instruction(block), target(target) {}
+    void generateAsm(std::ostream& o) const override;
+
+private:
+    BasicBlock& target;
+};
+
+class Br : public Instruction {
+public:
+    Br(BasicBlock& block, BasicBlock& target) : Instruction(block), target(target) {}
+    void generateAsm(std::ostream& o) const override;
+private:
+    BasicBlock& target;
+};
+
 class Return : public Instruction {
 public:
     Return(BasicBlock& block) : Instruction(block) {}

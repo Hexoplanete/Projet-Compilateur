@@ -28,8 +28,10 @@ public:
     ~ControlFlowGraph();
 
     template<typename... BArgs>
-    BasicBlock& createBlock(std::string name) {
-        _blocks.push_back(std::make_unique<BasicBlock>(*this, name));
+    BasicBlock& createBlock(std::string label = "") {
+        static int _nextBlocknumber; // just for naming
+        if (label == "") label = ".L" + std::to_string(_nextBlocknumber++);
+        _blocks.push_back(std::make_unique<BasicBlock>(*this, label));
         return getCurrentBlock();
     }
 
@@ -59,7 +61,6 @@ protected:
 
 
     std::vector<std::unique_ptr<BasicBlock>> _blocks; // all the basic blocks of this CF
-    int _nextBlocknumber; // just for naming
     BasicBlock* _currentBB;
 };
 

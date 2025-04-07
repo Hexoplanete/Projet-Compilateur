@@ -56,7 +56,7 @@ void Mul::generateAsm(std::ostream& o) const
 
 void Div::generateAsm(std::ostream& o) const
 {
-    o << "\tmovl\t %eax, %ebx\n";
+    o << "\tmovl\t" << reg() << ", %ebx\n";
     LdLoc(block, lhs).generateAsm(o);
     o << "\tcltd\n"; // 'cltd' = 'Convert Long To Double'
     o << "\tidivl\t%ebx\n";
@@ -138,4 +138,15 @@ void CompNe::generateAsm(std::ostream& o) const
 
 void Return::generateAsm(std::ostream& o) const
 {
+}
+
+void IR::Br::generateAsm(std::ostream& o) const
+{
+    o << "\tjmp\t" << target.getLabel() << "\n";
+}
+
+void IR::BrTrue::generateAsm(std::ostream& o) const
+{
+    o << "\tcmpl\t" << reg() << ", $1\n";
+    o << "\tje\t" << target.getLabel() << "\n";
 }

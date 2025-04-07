@@ -56,7 +56,12 @@ public:
     void generateAsm(std::ostream& o); // < x86 assembly code generation for this basic block (very simple)
 
     inline ControlFlowGraph& getCFG() { return cfg; }
-    
+
+    inline std::string getLabel() { return label; }
+    void setExit(BasicBlock& block);
+    void setExitTrue(BasicBlock& block);
+    void setExitFalse(BasicBlock& block);
+
 protected:
     std::string label; // label of the BB, also will be the label in the generated code
     std::vector<std::unique_ptr<Instruction>> instructions; // the instructions themselves.
