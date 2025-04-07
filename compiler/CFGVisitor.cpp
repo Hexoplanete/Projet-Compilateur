@@ -109,6 +109,62 @@ antlrcpp::Any CFGVisitor::visitExpr_equal(ifccParser::Expr_equalContext* ctx) {
     return 0;
 }
 
+antlrcpp::Any CFGVisitor::visitExpr_arithmetic_aff_add(ifccParser::Expr_arithmetic_aff_addContext* ctx) {
+    // a = a + ?
+    std::string varname = ctx->IDENTIFIER()->getText();
+    const auto& variable = cfg.getSymbolVar(varname);
+    // compute variable = a + ?
+    visit(ctx->expression());
+
+    if (ctx->OP_AFF_ADD()->getText() == "+=") {
+        cfg.getCurrentBlock().addInstruction<IR::Add>(variable);
+    }
+    else {
+        cfg.getCurrentBlock().addInstruction<IR::Sub>(variable);
+    }
+    // do a = variable
+    cfg.getCurrentBlock().addInstruction<IR::Store>(variable);
+    return 0;
+}
+
+antlrcpp::Any CFGVisitor::visitExpr_post_incr(ifccParser::Expr_post_incrContext* ctx) {
+    // b++ : we save the value of b in a tmp var that is put in eax at the end
+    std::string varname = ctx->IDENTIFIER()->getText();
+    const auto& variable = cfg.getSymbolVar(varname);
+    const auto& variableTmp = cfg.createTmpVar();
+    cfg.getCurrentBlock().addInstruction<IR::LdLoc>(variable);
+    cfg.getCurrentBlock().addInstruction<IR::Store>(variableTmp);
+
+    cfg.getCurrentBlock().addInstruction<IR::LdConst>(1);
+
+    if (ctx->OP_INCR()->getText() == "++") {
+        cfg.getCurrentBlock().addInstruction<IR::Add>(variable);
+    }
+    else {
+        cfg.getCurrentBlock().addInstruction<IR::Sub>(variable);
+    }
+    cfg.getCurrentBlock().addInstruction<IR::Store>(variable);
+    cfg.getCurrentBlock().addInstruction<IR::LdLoc>(variableTmp);
+    return 0;
+}
+
+antlrcpp::Any CFGVisitor::visitExpr_pre_incr(ifccParser::Expr_pre_incrContext* ctx) {
+    // ++b : we simply add 1 to b
+    std::string varname = ctx->IDENTIFIER()->getText();
+    const auto& variable = cfg.getSymbolVar(varname);
+
+    cfg.getCurrentBlock().addInstruction<IR::LdConst>(1);
+
+    if (ctx->OP_INCR()->getText() == "++") {
+        cfg.getCurrentBlock().addInstruction<IR::Add>(variable);
+    }
+    else {
+        cfg.getCurrentBlock().addInstruction<IR::Sub>(variable);
+    }
+    cfg.getCurrentBlock().addInstruction<IR::Store>(variable);
+    return 0;
+}
+
 antlrcpp::Any CFGVisitor::visitExpr_ident(ifccParser::Expr_identContext* ctx) {
     std::string varname = ctx->IDENTIFIER()->getText();
     const auto& variable = cfg.getSymbolVar(varname);

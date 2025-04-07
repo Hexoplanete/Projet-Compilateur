@@ -41,8 +41,11 @@ Les tests ont été regroupés par thèmes dans le dossier testfiles conforméme
 - 19_verif_var_decl_once
 - 20_verif_var_decl_used
 
+- 32_op_affec_incr_decr
+
 - Dossier non_regression : chaque fois qu'on ajoute une fonctionnalité, cela ne doit pas casser ce qui a déjà été fait
 
+Les tests des fonctions pour les entrées/sorties, qui comportent des appels bloquants sont situés dans un dossier séparé appelé "testfiles_manual".
 
 
 ### STRUCTURE DU CODE
