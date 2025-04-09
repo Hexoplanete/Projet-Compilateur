@@ -48,7 +48,7 @@ FILE ?= ../tests/testfiles/1_return42.c
 
 gui:
 	@mkdir -p $(SRC_DIR)/$(GEN_DIR) $(BUILD_DIR)
-	$(ANTLR) -Dlanguage=Java -o $(SRC_DIR)/$(GEN_DIR) $(SRC_DIR)/ifcc.g4
+	cd $(SRC_DIR) && $(ANTLR) -Dlanguage=Java -o $(GEN_DIR) ./ifcc.g4
 	javac -cp $(ANTLRJAR) -d $(BUILD_DIR) $(SRC_DIR)/$(GEN_DIR)/*.java
 	java -cp $(ANTLRJAR):$(BUILD_DIR) org.antlr.v4.gui.TestRig ifcc axiom -gui $(FILE)
 
