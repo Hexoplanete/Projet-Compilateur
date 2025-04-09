@@ -25,7 +25,7 @@ logger = logging.getLogger("ifcc")
 def command(string, logfile=None):
     """execute `string` as a shell command, optionally logging stdout+stderr to a file. return exit status.)"""
     try:
-        logger.debug(f"sh: {string}")
+        logger.debug(f"sh: {string} > '{logfile}'")
         output = subprocess.check_output(
             string, stderr=subprocess.STDOUT, shell=True)
         ret = 0
@@ -184,12 +184,12 @@ def list_test_files(paths: list[TestCase]) -> list[TestCase]:
 def prepare_tests(output: str, test_files: list[TestCase]):
     if os.path.isdir(output):
         logger.info(f"Cleaning previous run...")
-        logger.debug(f"sh: rm -rf {output}")
+        logger.debug(f"sh: rm -rf '{output}'")
         shutil.rmtree(output)
         logger.info(f"Done")
     
     print(f"Preparing tests...")
-    logger.debug(f"sh: mkdir {output}")
+    logger.debug(f"sh: mkdir '{output}'")
     os.makedirs(output, exist_ok=True)
 
     tests:list[TestCase] = []
@@ -199,9 +199,9 @@ def prepare_tests(output: str, test_files: list[TestCase]):
 
         # each test-case gets copied and processed in its own subdirectory:
         subdir = os.path.join(output, folder)
-        logger.debug(f"sh: mkdir {subdir}")
+        logger.debug(f"sh: mkdir '{subdir}'")
         os.makedirs(subdir, exist_ok=True)
-        logger.debug(f"sh: cp {test.path} {os.path.join(subdir, "input.c")}")
+        logger.debug(f"sh: cp '{test.path}' '{os.path.join(subdir, "input.c")}'")
         shutil.copyfile(test.path, os.path.join(subdir, "input.c"))
         tests.append(TestCase(test.name, subdir))
 
