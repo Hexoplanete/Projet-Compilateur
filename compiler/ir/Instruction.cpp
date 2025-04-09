@@ -147,6 +147,13 @@ void IR::Br::generateAsm(std::ostream& o) const
 
 void IR::BrTrue::generateAsm(std::ostream& o) const
 {
-    o << "\tcmpl\t" << reg() << ", $1\n";
-    o << "\tje\t" << target.getLabel() << "\n";
+    o << "\tcmpl\t$1, " << reg() << "\n";
+    o << "\tjz\t" << target.getLabel() << "\n";
+}
+
+void IR::CastBool::generateAsm(std::ostream& o) const
+{
+    o << "\tcmpl\t$0, " << reg() << "\n";
+    o << "\tsetne\t%al\n";
+    o << "\tandl\t$1, " << reg() << "\n";
 }

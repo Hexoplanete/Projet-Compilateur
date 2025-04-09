@@ -194,6 +194,12 @@ private:
     const Variable& lhs;
 };
 
+class CastBool : public Instruction {
+public:
+    CastBool(BasicBlock& block) : Instruction(block) {}
+    void generateAsm(std::ostream& o) const override;
+};
+
 class BrTrue : public Instruction {
 public:
     BrTrue(BasicBlock& block, BasicBlock& target) : Instruction(block), target(target) {}

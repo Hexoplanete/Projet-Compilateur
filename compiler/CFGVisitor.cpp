@@ -167,20 +167,22 @@ antlrcpp::Any CFGVisitor::visitExpr_pre_incr(ifccParser::Expr_pre_incrContext* c
 
 antlrcpp::Any CFGVisitor::visitExpr_arithmetic_lazy_and(ifccParser::Expr_arithmetic_lazy_andContext* ctx) {
     visit(ctx->expression(0));  // On fait que visiter, on n'a pas besoin de stocker le résultat
-
+    cfg.getCurrentBlock().addInstruction<IR::CastBool>();
+    
     // Createblock change le bloc actuel donc on a besoin de sauvegarder le bloc précédent
     IR::BasicBlock& leftBlock = cfg.getCurrentBlock();
-
+    
     // On change de bloc, on crée un nouveau bloc
     // On veut aller dans ce bloc là si le précédent est vrai
     IR::BasicBlock& rightBlock = cfg.createBlock();
     
     // Si leftBlock donne vrai, on va sur le rightBlock
     leftBlock.setExitTrue(rightBlock);
-
+    
     // Expression vient du contexte, de la syntaxe antlr 
     // Va le stocker par defaut dans reg
     visit(ctx->expression(1));
+    cfg.getCurrentBlock().addInstruction<IR::CastBool>();
 
     IR::BasicBlock& afterBlock = cfg.createBlock();
     leftBlock.setExitFalse(afterBlock);
