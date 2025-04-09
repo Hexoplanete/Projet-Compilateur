@@ -361,5 +361,6 @@ if __name__ == "__main__":
 
     log_results(compiler, results, stats, args.no_table, args.failed_only)
 
-    save_results(args.output, compiler, results, stats)
+    if not args.no_csv:
+        save_results(args.output, compiler, results, stats)
 
