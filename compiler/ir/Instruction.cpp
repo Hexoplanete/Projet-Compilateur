@@ -9,6 +9,10 @@ std::string reg() {
     return "%eax";
 }
 
+std::string regByte() {
+    return "%al";
+}
+
 void generateAsmComp(const Instruction& inst, std::ostream& o, const Variable& lhs) {
     o << "\tcmpl\t" << reg() << ", " << inst.varToAsm(lhs) << "\n";
 }
@@ -147,13 +151,13 @@ void IR::Br::generateAsm(std::ostream& o) const
 
 void IR::BrTrue::generateAsm(std::ostream& o) const
 {
-    o << "\tcmpl\t$1, " << reg() << "\n";
-    o << "\tjz\t" << target.getLabel() << "\n";
+    o << "\tcmpl\t$0, " << reg() << "\n";
+    o << "\tjne\t" << target.getLabel() << "\n";
 }
 
 void IR::CastBool::generateAsm(std::ostream& o) const
 {
     o << "\tcmpl\t$0, " << reg() << "\n";
-    o << "\tsetne\t%al\n";
+    o << "\tsetne\t" << regByte() << "\n";
     o << "\tandl\t$1, " << reg() << "\n";
 }

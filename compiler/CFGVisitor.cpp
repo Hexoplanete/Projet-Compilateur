@@ -18,7 +18,7 @@ antlrcpp::Any CFGVisitor::visitMain(ifccParser::MainContext* ctx) {
 antlrcpp::Any CFGVisitor::visitStmt_if(ifccParser::Stmt_ifContext* ctx) {
     IR::BasicBlock& blockCurr = cfg.getCurrentBlock();
     visit(ctx->expression());
-    
+
     IR::BasicBlock& blockThen = cfg.createBlock();
     visit(ctx->stmt_then());
 
@@ -26,7 +26,7 @@ antlrcpp::Any CFGVisitor::visitStmt_if(ifccParser::Stmt_ifContext* ctx) {
     if (ctx->stmt_else()) {
         visit(ctx->stmt_else());
     }
-    
+
     IR::BasicBlock& blockEndIf = cfg.createBlock();
     blockThen.setExit(blockEndIf);
     blockCurr.setExitTrue(blockThen);
@@ -42,7 +42,8 @@ antlrcpp::Any CFGVisitor::visitStmt_if(ifccParser::Stmt_ifContext* ctx) {
 antlrcpp::Any CFGVisitor::visitStmt_then(ifccParser::Stmt_thenContext* ctx) {
     if (ctx->stmt_block()) {
         visit(ctx->stmt_block());
-    } else if (ctx->stmt_expression()) {
+    }
+    else if (ctx->stmt_expression()) {
         visit(ctx->stmt_expression());
     }
 
@@ -55,9 +56,11 @@ antlrcpp::Any CFGVisitor::visitStmt_then(ifccParser::Stmt_thenContext* ctx) {
 antlrcpp::Any CFGVisitor::visitStmt_else(ifccParser::Stmt_elseContext* ctx) {
     if (ctx->stmt_block()) {
         visit(ctx->stmt_block());
-    } else if (ctx->stmt_expression()) {
+    }
+    else if (ctx->stmt_expression()) {
         visit(ctx->stmt_expression());
-    } else if (ctx->stmt_if()) {
+    }
+    else if (ctx->stmt_if()) {
         visit(ctx->stmt_expression());
     }
 
@@ -88,7 +91,7 @@ antlrcpp::Any CFGVisitor::visitStmt_while(ifccParser::Stmt_whileContext* ctx) {
 antlrcpp::Any CFGVisitor::visitDeclaration(ifccParser::DeclarationContext* ctx) {
     std::string varname = ctx->IDENTIFIER()->getText();
     const auto& variable = cfg.createSymbolVar(varname);
-    
+
     if (ctx->expression()) {
         visit(ctx->expression());
         cfg.getCurrentBlock().addInstruction<IR::Store>(variable);
@@ -127,7 +130,8 @@ antlrcpp::Any CFGVisitor::visitExpr_arithmetic_unary(ifccParser::Expr_arithmetic
     visit(ctx->expression());
     if (ctx->OP_NOT()) {
         cfg.getCurrentBlock().addInstruction<IR::LogicalNot>();
-    } else if (ctx->OP_ADD()->getText() == "-") {
+    }
+    else if (ctx->OP_ADD()->getText() == "-") {
         cfg.getCurrentBlock().addInstruction<IR::Negate>();
     }
     return 0;
@@ -172,7 +176,7 @@ antlrcpp::Any CFGVisitor::visitExpr_compare(ifccParser::Expr_compareContext* ctx
 antlrcpp::Any CFGVisitor::visitExpr_equal(ifccParser::Expr_equalContext* ctx) {
     const auto& lhs = visitAndStoreExpr(ctx->expression(0));
     visit(ctx->expression(1));
-    
+
     std::string op = ctx->OP_EQ()->getText();
     if (op == "==") cfg.getCurrentBlock().addInstruction<IR::CompEq>(lhs);
     else cfg.getCurrentBlock().addInstruction<IR::CompNe>(lhs);
@@ -238,17 +242,17 @@ antlrcpp::Any CFGVisitor::visitExpr_pre_incr(ifccParser::Expr_pre_incrContext* c
 antlrcpp::Any CFGVisitor::visitExpr_arithmetic_lazy_and(ifccParser::Expr_arithmetic_lazy_andContext* ctx) {
     visit(ctx->expression(0));  // On fait que visiter, on n'a pas besoin de stocker le résultat
     cfg.getCurrentBlock().addInstruction<IR::CastBool>();
-    
+
     // Createblock change le bloc actuel donc on a besoin de sauvegarder le bloc précédent
     IR::BasicBlock& leftBlock = cfg.getCurrentBlock();
-    
+
     // On change de bloc, on crée un nouveau bloc
     // On veut aller dans ce bloc là si le précédent est vrai
     IR::BasicBlock& rightBlock = cfg.createBlock();
-    
+
     // Si leftBlock donne vrai, on va sur le rightBlock
     leftBlock.setExitTrue(rightBlock);
-    
+
     // Expression vient du contexte, de la syntaxe antlr 
     // Va le stocker par defaut dans reg
     visit(ctx->expression(1));
@@ -265,6 +269,7 @@ antlrcpp::Any CFGVisitor::visitExpr_arithmetic_lazy_and(ifccParser::Expr_arithme
 
 antlrcpp::Any CFGVisitor::visitExpr_arithmetic_lazy_or(ifccParser::Expr_arithmetic_lazy_orContext* ctx) {
     visit(ctx->expression(0));  // On fait que visiter, on n'a pas besoin de stocker le résultat
+    cfg.getCurrentBlock().addInstruction<IR::CastBool>();
 
     // Createblock change le bloc actuel donc on a besoin de sauvegarder le bloc précédent
     IR::BasicBlock& leftBlock = cfg.getCurrentBlock();
@@ -272,13 +277,14 @@ antlrcpp::Any CFGVisitor::visitExpr_arithmetic_lazy_or(ifccParser::Expr_arithmet
     // On change de bloc, on crée un nouveau bloc
     // On veut aller dans ce bloc là si le précédent est vrai
     IR::BasicBlock& rightBlock = cfg.createBlock();
-    
+
     // Si leftBlock donne faux, on va sur le rightBlock
     leftBlock.setExitFalse(rightBlock);
 
     // Expression vient du contexte, de la syntaxe antlr 
     // Va le stocker par defaut dans reg
     visit(ctx->expression(1));
+    cfg.getCurrentBlock().addInstruction<IR::CastBool>();
 
     IR::BasicBlock& afterBlock = cfg.createBlock();
     leftBlock.setExitTrue(afterBlock);
