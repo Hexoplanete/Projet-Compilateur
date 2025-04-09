@@ -6,13 +6,13 @@ BasicBlock::BasicBlock(ControlFlowGraph& cfg, std::string label) :cfg(cfg), labe
 
 void BasicBlock::generateAsm(std::ostream& o)
 {
+    if (exitTrue) addInstruction<BrTrue>(*exitTrue);
+    if (exitFalse) addInstruction<Br>(*exitFalse);
+    
     o << label << ":" << "\n";
     for (auto&& inst : instructions) {
         inst.get()->generateAsm(o);
     }
-
-    if (exitTrue) addInstruction<BrTrue>(*exitTrue);
-    addInstruction<Br>(*exitFalse);
 }
 void IR::BasicBlock::setExit(BasicBlock& block)
 {
