@@ -54,7 +54,7 @@ OP_ADD: [+-];
 OP_AFF_ADD: '+=' | '-=';
 OP_INCR: '++' | '--';
 OP_NOT: '!';
-OP_COMP: '<' | '>';
+OP_COMP: '<' | '>' | '<=' | '>=';
 OP_EQ: '==' | '!=';
 TYPE: 'int';
 RETURN: 'return';                   // VARNAME must be after TYPE and RETURN, to avoid rule conflicts.

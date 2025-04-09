@@ -20,18 +20,20 @@ antlrcpp::Any CFGVisitor::visitStmt_if(ifccParser::Stmt_ifContext* ctx) {
     visit(ctx->expression());
 
     IR::BasicBlock& blockThen = cfg.createBlock();
+    blockCurr.setExitTrue(blockThen);
     visit(ctx->stmt_then());
+    IR::BasicBlock& blockThenEnd = cfg.getCurrentBlock();
 
     IR::BasicBlock& blockElse = cfg.createBlock();
+    blockCurr.setExitFalse(blockElse);
     if (ctx->stmt_else()) {
         visit(ctx->stmt_else());
     }
-
+    IR::BasicBlock& blockElseEnd = cfg.getCurrentBlock();
+    
     IR::BasicBlock& blockEndIf = cfg.createBlock();
-    blockThen.setExit(blockEndIf);
-    blockCurr.setExitTrue(blockThen);
-    blockElse.setExit(blockEndIf);
-    blockCurr.setExitFalse(blockElse);
+    blockThenEnd.setExit(blockEndIf);
+    blockElseEnd.setExit(blockEndIf);
 
     return 0;
 }
@@ -62,17 +64,19 @@ antlrcpp::Any CFGVisitor::visitStmt_else(ifccParser::Stmt_elseContext* ctx) {
 }
 
 antlrcpp::Any CFGVisitor::visitStmt_while(ifccParser::Stmt_whileContext* ctx) {
-    IR::BasicBlock& blockCurr = cfg.getCurrentBlock();
+
+    IR::BasicBlock& blockConditionWhile = cfg.createBlock();
     visit(ctx->expression());
 
     IR::BasicBlock& blockBody = cfg.createBlock();
+    blockConditionWhile.setExitTrue(blockBody);
     visit(ctx->stmt_block());
+    IR::BasicBlock& blockBodyEnd = cfg.getCurrentBlock();
+    blockBodyEnd.setExit(blockConditionWhile);
 
     IR::BasicBlock& blockEndWhile = cfg.createBlock();
-    blockCurr.setExitTrue(blockBody);
-    blockCurr.setExitFalse(blockEndWhile);
-    blockBody.setExit(blockCurr);
-
+    blockConditionWhile.setExitFalse(blockEndWhile);
+    
     return 0;
 }
 
