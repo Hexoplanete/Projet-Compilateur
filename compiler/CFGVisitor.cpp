@@ -33,9 +33,6 @@ antlrcpp::Any CFGVisitor::visitStmt_if(ifccParser::Stmt_ifContext* ctx) {
     blockElse.setExit(blockEndIf);
     blockCurr.setExitFalse(blockElse);
 
-    cfg.pushContext(); // TODO update when we do functions
-    cfg.popContext();
-
     return 0;
 }
 
@@ -46,9 +43,6 @@ antlrcpp::Any CFGVisitor::visitStmt_then(ifccParser::Stmt_thenContext* ctx) {
     else if (ctx->stmt_expression()) {
         visit(ctx->stmt_expression());
     }
-
-    cfg.pushContext(); // TODO update when we do functions
-    cfg.popContext();
 
     return 0;
 }
@@ -64,10 +58,6 @@ antlrcpp::Any CFGVisitor::visitStmt_else(ifccParser::Stmt_elseContext* ctx) {
         visit(ctx->stmt_expression());
     }
 
-    cfg.pushContext(); // TODO update when we do functions
-    cfg.popContext();
-    //BONSOIR PARIS
-
     return 0;
 }
 
@@ -82,8 +72,6 @@ antlrcpp::Any CFGVisitor::visitStmt_while(ifccParser::Stmt_whileContext* ctx) {
     blockCurr.setExitTrue(blockBody);
     blockCurr.setExitFalse(blockEndWhile);
     blockBody.setExit(blockCurr);
-    cfg.pushContext(); // TODO update when we do functions
-    cfg.popContext();
 
     return 0;
 }
