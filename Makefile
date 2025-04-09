@@ -22,7 +22,7 @@ default: all
 all: $(MAIN)
 
 test: $(MAIN)
-	cd tests && python3 ifcc-test.py testfiles
+	cd tests && python3 ifcc-test.py testfiles -c $(abspath ./ifcc)
 
 $(MAIN): $(OBJECTS)
 	@mkdir -p $(BUILD_DIR)

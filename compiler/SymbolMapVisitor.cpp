@@ -68,7 +68,7 @@ void SymbolMapVisitor::pushContext()
 void SymbolMapVisitor::popContext()
 {
     const auto& unused = _contextUnusedSymbols[_contextUnusedSymbols.size() - 1];
-    if (unused.empty()) {
+    if (!unused.empty()) {
         std::cerr << "error: Unused variable detected : ";
         for (const auto& symbol : unused) std::cerr << symbol << " ";
         std::cerr << std::endl;

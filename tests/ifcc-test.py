@@ -47,7 +47,7 @@ def dumpfile(name):
 ## ARGPARSE step: make sense of our command-line arguments
 
 argparser   = argparse.ArgumentParser(
-description = "Compile multiple programs with both GCC and IFCC, run them, and compare the results.",
+description = "Compile multiple programs with both GCC and a custom compiler, run them, and compare the results.",
 epilog      = ""
 )
 
@@ -55,14 +55,14 @@ argparser.add_argument('input',metavar='PATH',nargs='+',help='For each path give
                        +' if it\'s a file, use this file;'
                        +' if it\'s a directory, use all *.c files in this subtree')
 
+argparser.add_argument('-c', '--compiler-path', default="../ifcc",
+                       help='The path to the compiler to test')
 argparser.add_argument('-d','--debug',action="count",default=0,
                        help='Increase quantity of debugging messages (only useful to debug the test script itself)')
 argparser.add_argument('-v','--verbose',action="count",default=0,
                        help='Increase verbosity level. You can use this option multiple times.')
-argparser.add_argument('-w','--wrapper',metavar='PATH',
-                       help='Invoke your compiler through the shell script at PATH. (default: `ifcc-wrapper.sh`)')
-argparser.add_argument('-f','--failonly',action="count",default=0,
-                       help='Only print the test-cases that failed. (default: print all test-cases)')
+argparser.add_argument('-f','--failonly',action="store_true",default=False,
+                       help='Only print the test-cases that failed')
 
 args=argparser.parse_args()
 
@@ -76,8 +76,8 @@ if "ifcc-test-output" in orig_cwd:
     
 if os.path.isdir('ifcc-test-output'):
     # cleanup previous output directory
-    command('rm -rf ifcc-test-output')
-os.mkdir('ifcc-test-output')
+    shutil.rmtree("ifcc-test-output")
+os.makedirs('ifcc-test-output', exist_ok=True)
     
 ## Then we process the inputs arguments i.e. filenames or subtrees
 inputfilenames=[]
@@ -115,19 +115,17 @@ for inputfilename in inputfilenames:
         print("error: "+e.args[1]+": "+inputfilename)
         sys.exit(1)
 
-## Last but not least: we now locate the "wrapper script" that we will
-## use to invoke ifcc
-if args.wrapper:
-    wrapper=os.path.realpath(os.getcwd()+"/"+ args.wrapper)
-else:
-    wrapper=os.path.dirname(os.path.realpath(__file__))+"/ifcc-wrapper.sh"
-
-if not os.path.isfile(wrapper):
-    print("error: cannot find "+os.path.basename(wrapper)+" in directory: "+os.path.dirname(wrapper))
+## Last but not least: we now locate the compiler to test
+compilerPath = args.compiler_path
+if not os.path.isabs(compilerPath):
+    compilerPath = os.path.join(os.getcwd(), compilerPath)
+if not os.path.isfile(compilerPath):
+    print("error: could not find", compilerPath)
     exit(1)
 
 if args.debug:
-    print("debug: wrapper path: "+wrapper)
+    print("debug: compiler path:", compilerPath)
+compilerName = os.path.basename(compilerPath)
         
 ######################################################################################
 ## PREPARE step: copy all test-cases under ifcc-test-output
@@ -202,70 +200,70 @@ for jobname in jobs:
 
     os.chdir(orig_cwd)
 
-    print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1]) if args.verbose else None
+    if args.verbose: print('TEST-CASE: '+jobname.split('/')[-2]+'/'+jobname.split('/')[-1])
     os.chdir(jobname)
     
     ## Reference compiler = GCC
-    gccstatus=command("gcc -S -o asm-gcc.s input.c", "gcc-compile.txt")
+    gccstatus=command("gcc -S input.c -o asm-gcc.s", "gcc-compile.txt")
     if gccstatus == 0:
         # test-case is a valid program. we should run it
-        gccstatus=command("gcc -o exe-gcc asm-gcc.s", "gcc-link.txt")
+        gccstatus=command("gcc asm-gcc.s -o exe-gcc", "gcc-link.txt")
     if gccstatus == 0: # then both compile and link stage went well
         exegccstatus=command("./exe-gcc", "gcc-execute.txt")
         if args.verbose >=2:
             dumpfile("gcc-execute.txt")
             
     ## IFCC compiler
-    ifccstatus=command('"' + wrapper + '"' +" asm-ifcc.s input.c", "ifcc-compile.txt")
+    ifccstatus=command(f"{compilerPath} input.c -o asm-{compilerName}.s", f"{compilerName}-compile.txt")
     
     if gccstatus != 0 and ifccstatus != 0:
         ## ifcc correctly rejects invalid program -> test-case ok
-        print("TEST OK\r\n") if args.verbose else None 
+        if args.verbose: print("TEST OK\r\n")
         data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[32mOK\033[0m",gccstatus,ifccstatus, ""]) if not args.failonly else None
         nb_success+=1
         continue
     elif gccstatus != 0 and ifccstatus == 0:
         ## ifcc wrongly accepts invalid program -> error
-        print("TEST FAIL (your compiler accepts an invalid program)\r\n") if args.verbose else None
+        if args.verbose: print("TEST FAIL (your compiler accepts an invalid program)\r\n")
         data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[31mFAIL\033[0m", gccstatus, ifccstatus,"your compiler accepts an invalid program"])
         nb_failure+=1
         continue
     elif gccstatus == 0 and ifccstatus != 0:
         ## ifcc wrongly rejects valid program -> error
-        print("TEST FAIL (your compiler rejects a valid program)\r\n") if args.verbose else None
+        if args.verbose: print("TEST FAIL (your compiler rejects a valid program)\r\n")
         data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[31mFAIL\033[0m", gccstatus, ifccstatus, "your compiler rejects a valid program"])
         nb_failure+=1
         if args.verbose:
-            dumpfile("ifcc-compile.txt")
+            dumpfile(f"{compilerName}-compile.txt")
         continue
     else:
         ## ifcc accepts to compile valid program -> let's link it
-        ldstatus=command("gcc -o exe-ifcc asm-ifcc.s", "ifcc-link.txt")
+        ldstatus=command(f"gcc -o exe-{compilerName} asm-{compilerName}.s", f"{compilerName}-link.txt")
         if ldstatus:
-            print("TEST FAIL (your compiler produces incorrect assembly)\r\n") if args.verbose else None
+            if args.verbose: print("TEST FAIL (your compiler produces incorrect assembly)\r\n")
             data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[31mFAIL\033[0m", 0, ldstatus,"your compiler produces incorrect assembly"])
             nb_failure+=1
             if args.verbose:
-                dumpfile("ifcc-link.txt")
+                dumpfile(f"{compilerName}-link.txt")
             continue
 
     ## both compilers  did produce an  executable, so now we  run both
     ## these executables and compare the results.
         
-    exeifccstatus = command("./exe-ifcc","ifcc-execute.txt")
-    if open("gcc-execute.txt").read() != open("ifcc-execute.txt").read() :
-        print("TEST FAIL (different results at execution)\r\n") if args.verbose else None
+    exeifccstatus = command(f"./exe-{compilerName}",f"{compilerName}-execute.txt")
+    if open("gcc-execute.txt").read() != open(f"{compilerName}-execute.txt").read() :
+        if args.verbose: print("TEST FAIL (different results at execution)\r\n")
         data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[31mFAIL\033[0m", exegccstatus, exeifccstatus,"different results at execution"])
         nb_failure+=1
         if args.verbose:
             print("GCC:")
             dumpfile("gcc-execute.txt")
             print("you:")
-            dumpfile("ifcc-execute.txt")
+            dumpfile(f"{compilerName}-execute.txt")
         continue
 
     ## last but not least
-    print("TEST OK\r\n") if args.verbose else None
+    if args.verbose: print("TEST OK\r\n")
     data.append([jobname.split('/')[-2]+'/'+jobname.split('/')[-1], "\033[32mOK\033[0m", exegccstatus, exeifccstatus,""]) if not args.failonly else None
     nb_success+=1
 
@@ -302,7 +300,7 @@ def tabulate(data:list[list[str]], headers: list[str], /):
 
     return "\n".join(lines)
 
-table = tabulate(data, ["Test Path", "Result", "gcc", "ifcc", "Comment"])
+table = tabulate(data, ["Test Path", "Result", "gcc", compilerName, "Comment"])
 print()
 print(table)
 print("SUMMARY: "+str(nb_success)+" tests passed, "+str(nb_failure)+" tests failed, "+ str(nb_jobs)+" tests total")
