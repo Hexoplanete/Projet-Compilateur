@@ -53,7 +53,7 @@ public:
 protected:
     int reserveSpace(int size);
     // TODO : edit symbol map to contain variable types (int, char, double...)
-    std::vector<Variable> _symbols;
+    std::vector<std::shared_ptr<Variable>> _symbols;
     int _memoryTop; // to allocate new symbols in the symbol table
     std::vector<std::map<std::string, Variable*>> _contextSymbolMaps; // part of the symbol table
     std::vector<std::map<std::string, Variable*>> _contextTmpMaps; // part of the temporary symbol table

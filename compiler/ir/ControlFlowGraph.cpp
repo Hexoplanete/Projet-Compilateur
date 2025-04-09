@@ -50,17 +50,19 @@ void ControlFlowGraph::popContext()
 
 const Variable& ControlFlowGraph::createSymbolVar(std::string name)
 {
-    Variable& variable = _symbols.emplace_back(name, reserveSpace(4));
-    _contextSymbolMaps[_contextSymbolMaps.size() - 1][name] = &variable;
-    return variable;
+    auto variable = std::make_shared<Variable>(name, reserveSpace(4));
+    _symbols.push_back(variable);
+    _contextSymbolMaps[_contextSymbolMaps.size() - 1][name] = variable.get();
+    return *variable.get();
 }
 
 const Variable& ControlFlowGraph::createTmpVar()
 {
     std::string name = "!" + std::to_string(_tmpCount++);
-    Variable& variable = _symbols.emplace_back(name, reserveSpace(4));
-    _contextTmpMaps[_contextTmpMaps.size() - 1][name] = &variable;
-    return variable;
+    auto variable = std::make_shared<Variable>(name, reserveSpace(4));
+    _symbols.push_back(variable);
+    _contextTmpMaps[_contextTmpMaps.size() - 1][name] = variable.get();
+    return *variable.get();
 }
 
 const Variable& IR::ControlFlowGraph::getSymbolVar(std::string varname)
