@@ -8,3 +8,5 @@ ifcc
 antlr/
 
 tests/ifcc-test-output
+tests/ifcc-test-ifcc
+tests/*.csv
