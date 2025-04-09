@@ -333,14 +333,14 @@ def log_results(compiler:Compiler, results: list[TestResult], stats: ResultsStat
 
 def save_results(output: str, compiler: Compiler, results: list[TestResult], stats: ResultsStats):
     file_name = f"{datetime.today().strftime('%Y%m%d_%H%M%S')}-{output}.csv"
-    print(f"Saving results to '{file_name}'...")
+    logger.info(f"Saving results...")
     with open(file_name, 'w') as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow(["Test", "Result", "Step", "gcc", compiler.name, "Comment"])
         for r in results:
             row = [r.name, "OK" if r.passed else "FAIL", r.step, r.gcc, r.compiler, r.comment]
             writer.writerow(row)
-    print(f"Done")
+    print(f"Saved results to '{file_name}'")
 
 
 if __name__ == "__main__":
