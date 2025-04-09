@@ -7,7 +7,7 @@ prog: main;
 main: 'int' 'main' '(' ')' '{' stmt* stmt_jump '}';
 
 stmt:
-	stmt_declaration | stmt_expression | stmt_jump | stmt_block ;
+	stmt_declaration | stmt_expression | stmt_jump | stmt_block | stmt_if | stmt_while;
 
 // TODO : quand on aura + de types
 stmt_declaration: TYPE declaration (',' declaration)* ';';
@@ -41,6 +41,11 @@ stmt_block: '{' stmt* '}';
 // 	| CHAR
 // 	| FLOAT
 
+stmt_if : 'if' '(' expression ')' stmt_then stmt_else?;
+stmt_then : stmt_block | stmt_expression;
+stmt_else : 'else' (stmt_block | stmt_expression | stmt_if);
+
+stmt_while : 'while' '(' expression ')' stmt_block;
 
 // TODO : Implémenter les caractères
 

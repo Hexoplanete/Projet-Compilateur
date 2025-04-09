@@ -15,6 +15,76 @@ antlrcpp::Any CFGVisitor::visitMain(ifccParser::MainContext* ctx) {
     return 0;
 }
 
+antlrcpp::Any CFGVisitor::visitStmt_if(ifccParser::Stmt_ifContext* ctx) {
+    IR::BasicBlock& blockCurr = cfg.getCurrentBlock();
+    visit(ctx->expression());
+    
+    IR::BasicBlock& blockThen = cfg.createBlock();
+    visit(ctx->stmt_then());
+
+    IR::BasicBlock& blockElse = cfg.createBlock();
+    if (ctx->stmt_else()) {
+        visit(ctx->stmt_else());
+    }
+    
+    IR::BasicBlock& blockEndIf = cfg.createBlock();
+    blockThen.setExit(blockEndIf);
+    blockCurr.setExitTrue(blockThen);
+    blockElse.setExit(blockEndIf);
+    blockCurr.setExitFalse(blockElse);
+
+    cfg.pushContext(); // TODO update when we do functions
+    cfg.popContext();
+
+    return 0;
+}
+
+antlrcpp::Any CFGVisitor::visitStmt_then(ifccParser::Stmt_thenContext* ctx) {
+    if (ctx->stmt_block()) {
+        visit(ctx->stmt_block());
+    } else if (ctx->stmt_expression()) {
+        visit(ctx->stmt_expression());
+    }
+
+    cfg.pushContext(); // TODO update when we do functions
+    cfg.popContext();
+
+    return 0;
+}
+
+antlrcpp::Any CFGVisitor::visitStmt_else(ifccParser::Stmt_elseContext* ctx) {
+    if (ctx->stmt_block()) {
+        visit(ctx->stmt_block());
+    } else if (ctx->stmt_expression()) {
+        visit(ctx->stmt_expression());
+    } else if (ctx->stmt_if()) {
+        visit(ctx->stmt_expression());
+    }
+
+    cfg.pushContext(); // TODO update when we do functions
+    cfg.popContext();
+    //BONSOIR PARIS
+
+    return 0;
+}
+
+antlrcpp::Any CFGVisitor::visitStmt_while(ifccParser::Stmt_whileContext* ctx) {
+    IR::BasicBlock& blockCurr = cfg.getCurrentBlock();
+    visit(ctx->expression());
+
+    IR::BasicBlock& blockBody = cfg.createBlock();
+    visit(ctx->stmt_block());
+
+    IR::BasicBlock& blockEndWhile = cfg.createBlock();
+    blockCurr.setExitTrue(blockBody);
+    blockCurr.setExitFalse(blockEndWhile);
+    blockBody.setExit(blockCurr);
+    cfg.pushContext(); // TODO update when we do functions
+    cfg.popContext();
+
+    return 0;
+}
+
 antlrcpp::Any CFGVisitor::visitDeclaration(ifccParser::DeclarationContext* ctx) {
     std::string varname = ctx->IDENTIFIER()->getText();
     const auto& variable = cfg.createSymbolVar(varname);
