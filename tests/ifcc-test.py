@@ -201,7 +201,7 @@ def prepare_tests(output: str, test_files: list[TestCase]):
         subdir = os.path.join(output, folder)
         logger.debug(f"sh: mkdir '{subdir}'")
         os.makedirs(subdir, exist_ok=True)
-        logger.debug(f"sh: cp '{test.path}' '{os.path.join(subdir, "input.c")}'")
+        logger.debug(f"sh: cp '{test.path}' '{os.path.join(subdir, 'input.c')}'")
         shutil.copyfile(test.path, os.path.join(subdir, "input.c"))
         tests.append(TestCase(test.name, subdir))
 
