@@ -41,7 +41,7 @@ void GenFunc::generateAsm(std::ostream& o) const
 
     std::vector<std::string> registre = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
     for (int i = 0; i < varList.size() && i < 6; ++i)
-        std::cout << "\tmovl\t" << registre[i] << ", " << varToAsm(varList[i]) << "\n";
+        o << "\tmovl\t" << registre[i] << ", " << varToAsm(varList[i]) << "\n";
 }
 
 void MovToReg::generateAsm(std::ostream& o) const
