@@ -141,10 +141,12 @@ def list_test_files(paths: list[TestCase]) -> list[TestCase]:
                 logger.error(f"incorrect filename suffix (should be '.c'): '{path}'")
                 exit(1)
         elif os.path.isdir(path):
-            children = glob.glob(os.path.join(path, "**/*.c"))
-            for c in children:
-                name = os.path.splitext(c.removeprefix(f"{path}/"))[0]
-                test_files.append(TestCase(name, c))
+            for dirpath, _, filenames in os.walk(path):
+                for filename in [f for f in filenames if os.path.splitext(f)[1] == ".c"]:
+                    file = os.path.join(dirpath, filename)
+                    name = os.path.splitext(file)[0].removeprefix(f"{path}/")
+                    test_files.append(TestCase(name,file))
+
         else:
             logger.error(f"cannot read input path '{path}'")
             sys.exit(1)
@@ -152,7 +154,7 @@ def list_test_files(paths: list[TestCase]) -> list[TestCase]:
     logger.debug(f"Found {len(test_files)} tests files")
 
     if len(test_files) == 0:
-        print(f"Nothing to test in {args.input}")
+        print(f"Nothing to test in {paths}")
         sys.exit(1)
 
     logger.debug(f"Attempting to open the files...")
@@ -162,7 +164,7 @@ def list_test_files(paths: list[TestCase]) -> list[TestCase]:
             f = open(test.path, "r")
             f.close()
         except Exception as e:
-            logger.error(f"{e.args[1]}: {test.name}")
+            logger.error(f"{e.args[1]}: {test.path}")
             sys.exit(1)
 
     logger.debug("Removing duplicates...")
@@ -201,7 +203,7 @@ def prepare_tests(output: str, test_files: list[TestCase]):
         subdir = os.path.join(output, folder)
         logger.debug(f"sh: mkdir '{subdir}'")
         os.makedirs(subdir, exist_ok=True)
-        logger.debug(f"sh: cp '{test.path}' '{os.path.join(subdir, "input.c")}'")
+        logger.debug(f"sh: cp '{test.path}' '{os.path.join(subdir, 'input.c')}'")
         shutil.copyfile(test.path, os.path.join(subdir, "input.c"))
         tests.append(TestCase(test.name, subdir))
 
@@ -219,16 +221,16 @@ def test_compiler(compiler: Compiler, file: str):
     results = RunResult()
 
     asm_name = f"0_asm-{compiler.name}"
-    results.compile = command(f"{compiler.path} {compiler.compile_flags} {file} -o {asm_name}.s", f"0_compile-{compiler.name}.txt")
+    results.compile = command(f'"{compiler.path}" {compiler.compile_flags} "{file}" -o {asm_name}.s', f'0_compile-{compiler.name}.txt')
     if results.compile != 0:
         return results
 
     bin_name = f"1_bin-{compiler.name}"
-    results.link = command(f"gcc {asm_name}.s -o {bin_name}", f"1_link-{compiler.name}.txt")
+    results.link = command(f'gcc {asm_name}.s -o {bin_name}', f'1_link-{compiler.name}.txt')
     if results.link != 0:
         return results
 
-    results.execute = command(f"./{bin_name}", f"2_execute-{compiler.name}.txt")
+    results.execute = command(f'./{bin_name}', f'2_execute-{compiler.name}.txt')
     return results
 
 

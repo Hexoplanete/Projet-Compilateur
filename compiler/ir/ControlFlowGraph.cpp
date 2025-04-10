@@ -1,5 +1,4 @@
 #include "ControlFlowGraph.h"
-#include <format>
 using namespace IR;
 
 ControlFlowGraph::ControlFlowGraph() : _memoryTop(0), _tmpCount(0) {}
@@ -7,33 +6,9 @@ ControlFlowGraph::~ControlFlowGraph() {}
 
 void ControlFlowGraph::generateAsm(std::ostream& o) const
 {
-    generateAsmPrologue(o);
-    generateAsmBody(o);
-    generateAsmEpilogue(o);
-}
-
-void ControlFlowGraph::generateAsmPrologue(std::ostream& o) const
-{
-    o << ".globl main\n";
-    o << "main:\n";
-    o << "\t# prologue:\n";
-    o << "\tpushq\t%rbp # save %rbp on the stack\n";
-    o << "\tmovq\t%rsp, %rbp # define %rbp for the current function\n\n";
-}
-
-void ControlFlowGraph::generateAsmBody(std::ostream& o) const
-{
-    o << "\t# body:\n";
     for (auto&& block : _blocks) {
         block.get()->generateAsm(o);
     }
-}
-
-void ControlFlowGraph::generateAsmEpilogue(std::ostream& o) const
-{
-    o << "\n\t# epilogue:\n";
-    o << "\tpopq\t%rbp # restore %rbp from the stack\n";
-    o << "\tret # return to the caller (here the shell)" << std::endl;
 }
 
 void ControlFlowGraph::pushContext()
@@ -49,6 +24,14 @@ void ControlFlowGraph::popContext()
 }
 
 const Variable& ControlFlowGraph::createSymbolVar(std::string name)
+{
+    auto variable = std::make_shared<Variable>(name, reserveSpace(4));
+    _symbols.push_back(variable);
+    _contextSymbolMaps[_contextSymbolMaps.size() - 1][name] = variable.get();
+    return *variable.get();
+}
+
+const Variable& ControlFlowGraph::createSymbolVar(std::string name, int address)
 {
     auto variable = std::make_shared<Variable>(name, reserveSpace(4));
     _symbols.push_back(variable);
