@@ -23,6 +23,21 @@ void ControlFlowGraph::popContext()
     _contextTmpMaps.pop_back();
 }
 
+BasicBlock& ControlFlowGraph::createAndAddBlock(std::string label) {
+    addBlock(createBlock(label));
+    return getCurrentBlock();
+}
+
+std::unique_ptr<BasicBlock> ControlFlowGraph::createBlock(std::string label) {
+    static int _nextBlocknumber = 0; // just for naming
+    if (label == "") label = ".L" + std::to_string(_nextBlocknumber++);
+    return std::make_unique<BasicBlock>(*this, label);
+}
+
+void ControlFlowGraph::addBlock(std::unique_ptr<BasicBlock> block) {
+    _blocks.push_back(std::move(block));
+}
+
 const Variable& ControlFlowGraph::createSymbolVar(std::string name)
 {
     auto variable = std::make_shared<Variable>(name, reserveSpace(4));

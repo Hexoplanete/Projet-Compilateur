@@ -11,7 +11,6 @@ public:
     virtual antlrcpp::Any visitProg(ifccParser::ProgContext* ctx) override;
     virtual antlrcpp::Any visitFunction_def(ifccParser::Function_defContext* ctx) override;
     virtual antlrcpp::Any visitStmt_if(ifccParser::Stmt_ifContext* ctx) override;
-    virtual antlrcpp::Any visitStmt_then(ifccParser::Stmt_thenContext* ctx) override;
     virtual antlrcpp::Any visitStmt_else(ifccParser::Stmt_elseContext* ctx) override;
     virtual antlrcpp::Any visitStmt_while(ifccParser::Stmt_whileContext* ctx) override;
 
@@ -42,8 +41,9 @@ public:
 
     const IR::Variable& visitAndStoreExpr(ifccParser::ExpressionContext* ctx);
 
-    inline IR::ControlFlowGraph& getCFG() { return cfg; }
+    inline IR::ControlFlowGraph& getCFG() { return _cfg; }
 private:
-    IR::ControlFlowGraph cfg;
+    IR::ControlFlowGraph _cfg;
+    IR::BasicBlock* _returnBlock;
     std::map<std::string, std::string> _mapFuncNameToSignature;
 };

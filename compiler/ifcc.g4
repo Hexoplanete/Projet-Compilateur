@@ -43,9 +43,8 @@ stmt_jump: RETURN expression? ';' # stmt_jump_return;
 // 	| CHAR
 // 	| FLOAT
 
-stmt_if : 'if' '(' expression ')' stmt_then stmt_else?;
-stmt_then : stmt_block | stmt_expression;
-stmt_else : 'else' (stmt_block | stmt_expression | stmt_if);
+stmt_if: 'if' '(' expression ')' stmt stmt_else?;
+stmt_else : 'else' stmt;
 
 stmt_while : 'while' '(' expression ')' stmt_block;
 

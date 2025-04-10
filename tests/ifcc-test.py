@@ -286,6 +286,10 @@ def run_tests(tests: list[TestCase], compiler: Compiler):
             continue
 
         # ifcc accepts to compile valid program -> let's link it
+        if gcc_result.link != 0 and compiler_results.link != 0:
+            save_result(True, "Link", gcc_result.link, compiler_results.link)
+            continue
+
         if compiler_results.link != 0:
             save_result(False, "Link", gcc_result.link, compiler_results.link, "your compiler produces incorrect assembly")
             continue

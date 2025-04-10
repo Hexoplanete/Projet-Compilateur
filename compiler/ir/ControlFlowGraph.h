@@ -28,13 +28,9 @@ public:
     ControlFlowGraph();
     ~ControlFlowGraph();
 
-    template<typename... BArgs>
-    BasicBlock& createBlock(std::string label = "") {
-        static int _nextBlocknumber = 0; // just for naming
-        if (label == "") label = ".L" + std::to_string(_nextBlocknumber++);
-        _blocks.push_back(std::make_unique<BasicBlock>(*this, label));
-        return getCurrentBlock();
-    }
+    std::unique_ptr<BasicBlock> createBlock(std::string label = "");
+    void addBlock(std::unique_ptr<BasicBlock> block);
+    BasicBlock& createAndAddBlock(std::string label = "");
 
     // x86 code generation: could be encapsulated in a processor class in a retargetable compiler
     void generateAsm(std::ostream& o) const;
