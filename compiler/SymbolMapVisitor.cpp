@@ -13,6 +13,12 @@ antlrcpp::Any SymbolMapVisitor::visitProg(ifccParser::ProgContext* ctx)
     _contextUnusedSymbols.clear();
     _functions.clear();
     _functionParams.clear();
+
+    _functions.insert("putchar");
+    _functionParams["putchar"] = 1;
+    _functions.insert("getchar");
+    _functionParams["getchar"] = 0;
+
     ifccBaseVisitor::visitProg(ctx);
     return 0;
 }
@@ -36,18 +42,16 @@ antlrcpp::Any SymbolMapVisitor::visitFunction_def(ifccParser::Function_defContex
 
     if (!types.empty() && !identifiers.empty()) {
         _functionParams[funcName] = identifiers.size();
-        int i;
-        for (i = 0; i < identifiers.size(); ++i) {
+        for (int i = 0; i < identifiers.size(); ++i)
             addVariable(identifiers[i]->getText());
-        }
-        
-        // Visiter le corps de la fonction
-        for (auto stmt : ctx->stmt()) {
-            visitStmt(stmt);  // Appelle le visiteur sur chaque statement
-        }
     }
     else
         _functionParams[funcName] = 0;
+
+    // Visiter le corps de la fonction
+    for (auto stmt : ctx->stmt()) {
+        visitStmt(stmt);  // Appelle le visiteur sur chaque statement
+    }
     popContext();
     return 0;
 }
