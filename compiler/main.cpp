@@ -56,8 +56,7 @@ int main(int argc, char* const * argv)
     CFGVisitor cfgVisitor;
     cfgVisitor.visit(tree);
 
-    
-    // TODO add arg parser  (-o + default file output)
+
     std::ofstream ecriture(outputPath);
     cfgVisitor.getCFG().generateAsm(ecriture);
 

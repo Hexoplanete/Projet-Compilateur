@@ -17,7 +17,7 @@ antlrcpp::Any CFGVisitor::visitFunction_def(ifccParser::Function_defContext* ctx
     std::string name(ctx->IDENTIFIER()[0]->getText());
     std::string signature(name);
 
-    cfg.pushContext(); // TODO update when we do functions
+    cfg.pushContext();
 
     if (!name.compare("main")){
         cfg.createBlock(name);

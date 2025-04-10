@@ -43,7 +43,6 @@ private:
        followed by a conditional jump to the exit_false branch
 */
 
-// TODO read type
 class BasicBlock {
 public:
     BasicBlock(ControlFlowGraph& cfg, std::string label);
