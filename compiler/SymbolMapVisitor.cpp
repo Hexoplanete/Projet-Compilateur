@@ -12,6 +12,7 @@ antlrcpp::Any SymbolMapVisitor::visitProg(ifccParser::ProgContext* ctx)
     _contextSymbolMaps.clear();
     _contextUnusedSymbols.clear();
     _functions.clear();
+    _functionParams.clear();
     ifccBaseVisitor::visitProg(ctx);
     return 0;
 }
@@ -20,7 +21,7 @@ antlrcpp::Any SymbolMapVisitor::visitProg(ifccParser::ProgContext* ctx)
 antlrcpp::Any SymbolMapVisitor::visitFunction_def(ifccParser::Function_defContext* ctx)
 {
     pushContext();
-    std::string funcName(ctx->IDENTIFIER()->getText());
+    std::string funcName(ctx->IDENTIFIER()[0]->getText());
     if (_functions.find(funcName) != _functions.end()) {
         std::cerr << "error: Function " << funcName << " already defined." << std::endl;
         exit(1);
@@ -30,11 +31,13 @@ antlrcpp::Any SymbolMapVisitor::visitFunction_def(ifccParser::Function_defContex
     // Liste des types
     auto types = ctx->TYPE();
     // Liste des identifiants (paramètres)
-    auto declarations = ctx->declaration();
-    if (!types.empty() && !declarations.empty()) {
+    auto preIdentifiers = ctx->IDENTIFIER();
+    auto identifiers = std::vector<antlr4::tree::TerminalNode *>(preIdentifiers.begin() + 1, preIdentifiers.end());
+    
+    if (!types.empty() && !identifiers.empty()) {
         int i;
-        for (i = 0; i < types.size(); ++i) {
-            visitChildren(declarations[i]);
+        for (i = 0; i < identifiers.size(); ++i) {
+            addVariable(identifiers[i]->getText());
         }
         
         // Visiter le corps de la fonction

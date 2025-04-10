@@ -1,8 +1,9 @@
 #include "CFGVisitor.h"
 #include "ir/Instruction.h"
 #include <memory>
+#include <vector>
 
-CFGVisitor::CFGVisitor() {}
+CFGVisitor::CFGVisitor() { _mapFuncNameToSignature.clear(); }
 
 CFGVisitor::~CFGVisitor() {}
 
@@ -13,7 +14,7 @@ antlrcpp::Any CFGVisitor::visitProg(ifccParser::ProgContext* ctx) {
 
 antlrcpp::Any CFGVisitor::visitFunction_def(ifccParser::Function_defContext* ctx) {
     cfg.resetMemoryCount();
-    std::string name(ctx->IDENTIFIER()->getText());
+    std::string name(ctx->IDENTIFIER()[0]->getText());
     std::string signature(name);
 
     cfg.pushContext(); // TODO update when we do functions
@@ -26,18 +27,19 @@ antlrcpp::Any CFGVisitor::visitFunction_def(ifccParser::Function_defContext* ctx
         // Liste des types
         auto types = ctx->TYPE();
         // Liste des identifiants (paramètres)
-        auto declarations = ctx->declaration();
+        auto preIdentifiers = ctx->IDENTIFIER();
+        auto identifiers = std::vector<antlr4::tree::TerminalNode *>(preIdentifiers.begin() + 1, preIdentifiers.end());
 
         std::vector<IR::Variable> varList;
         varList.clear();
-        if (!types.empty() && !declarations.empty()) {
+        if (!types.empty() && !identifiers.empty()) {
             int i;
-            for (i = 0; i < types.size() && i < 6; ++i)
-                varList.push_back(cfg.createSymbolVar(declarations[i]->IDENTIFIER()->getText()));
+            for (i = 0; i < identifiers.size() && i < 6; ++i)
+                varList.push_back(cfg.createSymbolVar(identifiers[i]->getText()));
             int addressPos = 8;
-            for (; i < types.size(); ++i) {
+            for (; i <identifiers.size(); ++i) {
                 addressPos += 8;
-                varList.push_back(cfg.createSymbolVar(declarations[i]->IDENTIFIER()->getText(), addressPos));
+                varList.push_back(cfg.createSymbolVar(identifiers[i]->getText(), addressPos));
             }
         }
         signature += "(";
@@ -272,6 +274,31 @@ antlrcpp::Any CFGVisitor::visitExpr_pre_incr(ifccParser::Expr_pre_incrContext* c
         cfg.getCurrentBlock().addInstruction<IR::Sub>(variable);
     }
     cfg.getCurrentBlock().addInstruction<IR::Store>(variable);
+    return 0;
+}
+
+antlrcpp::Any CFGVisitor::visitExpr_fct_call(ifccParser::Expr_fct_callContext* ctx) {
+    // Liste des identifiants (paramètres)
+    auto expressions = ctx->expression();
+    std::vector<std::string> registre = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
+    std::vector<IR::Variable> varVector;
+    varVector.clear();
+    if (!expressions.empty()) {
+        for (int j = 0; j < expressions.size(); ++j){
+            varVector.push_back(visitAndStoreExpr(expressions[j]));
+        }
+        for (int i = 1; i < expressions.size() && i < 6; ++i) {
+            cfg.getCurrentBlock().addInstruction<IR::MovToReg>(varVector[i], registre[i]);
+        }
+        for (int i = expressions.size() - 1; i > 5; --i) {
+            cfg.getCurrentBlock().addInstruction<IR::MovToReg>(varVector[i], "%edi");
+            cfg.getCurrentBlock().addInstruction<IR::PushQ>();
+        }
+        cfg.getCurrentBlock().addInstruction<IR::MovToReg>(varVector[0], registre[0]);
+    }
+    
+    cfg.getCurrentBlock().addInstruction<IR::CallFunc>(ctx->IDENTIFIER()->getText(), varVector); // CHANGERa
+
     return 0;
 }
 

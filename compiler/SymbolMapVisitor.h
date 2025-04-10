@@ -26,9 +26,11 @@ public:
     void popContext();
     void addVariable(std::string name);
     void useVariable(std::string name);
+    inline std::set<std::string>& getFunctionSet() { return _functions; }
 private:
     std::vector<std::set<std::string>> _contextSymbolMaps; // The symbol table associates a block name and a variable names to their location in the allocated memory.
     std::vector<std::set<std::string>> _contextUnusedSymbols;
     
     std::set<std::string> _functions; // Set with all the names of all functions
+    std::map<std::string, int> _functionParams; // A map indicating the number of parameters a function has
 };

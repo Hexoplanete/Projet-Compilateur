@@ -44,6 +44,23 @@ void GenFunc::generateAsm(std::ostream& o) const
         std::cout << "\tmovl\t" << registre[i] << ", " << varToAsm(varList[i]) << "\n";
 }
 
+void MovToReg::generateAsm(std::ostream& o) const
+{
+    o << "\tmovl\t" << name1 << ", " << name2 << "\n";
+}
+
+void PushQ::generateAsm(std::ostream& o) const
+{
+    o << "\tpushq\t%rdi\n";
+}
+
+void CallFunc::generateAsm(std::ostream& o) const
+{
+    o << "\tcall\t" << name << "\n";
+    if (!varList.empty() && varList.size() > 6)
+        o << "\taddq\t$" << (varList.size() - 6) * 8 << ", %rsp\n";
+}
+
 void LdConst::generateAsm(std::ostream& o) const
 {
     o << "\tmovl\t$" << std::to_string(value) << ", " << reg() << "\n";

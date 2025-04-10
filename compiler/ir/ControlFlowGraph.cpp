@@ -6,8 +6,6 @@ ControlFlowGraph::~ControlFlowGraph() {}
 
 void ControlFlowGraph::generateAsm(std::ostream& o) const
 {
-    // GEN .GLOBL CHANGERa
-
     for (auto&& block : _blocks) {
         block.get()->generateAsm(o);
     }

@@ -39,6 +39,33 @@ class GenFunc : public Instruction {
         std::vector<Variable> varList;
 };
 
+class CallFunc : public Instruction {
+    public:
+        CallFunc(BasicBlock& block, const std::string str, const std::vector<Variable>& vars) : Instruction(block), name(str), varList(vars) {}
+        void generateAsm(std::ostream& o) const override;
+    
+    private:
+        std::string name;
+        std::vector<Variable> varList;
+};
+
+class MovToReg : public Instruction {
+    public:
+        MovToReg(BasicBlock& block, const std::string var, const std::string reg) : Instruction(block), name1(var), name2(reg) {}
+        MovToReg(BasicBlock& block, const Variable& var, const std::string reg) : Instruction(block), name2(reg) { name1 = varToAsm(var); }
+        void generateAsm(std::ostream& o) const override;
+    
+    private:
+        std::string name1;
+        std::string name2;
+};
+
+class PushQ : public Instruction {
+    public:
+        PushQ(BasicBlock& block) : Instruction(block) {}
+        void generateAsm(std::ostream& o) const override;
+};
+
 class LdConst : public Instruction {
 public:
     LdConst(BasicBlock& block, int constValue) : Instruction(block), value(constValue) {}

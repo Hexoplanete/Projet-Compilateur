@@ -31,6 +31,7 @@ public:
     virtual antlrcpp::Any visitExpr_arithmetic_aff_add(ifccParser::Expr_arithmetic_aff_addContext* ctx) override;
     virtual antlrcpp::Any visitExpr_post_incr(ifccParser::Expr_post_incrContext* ctx) override;
     virtual antlrcpp::Any visitExpr_pre_incr(ifccParser::Expr_pre_incrContext* ctx) override;
+    virtual antlrcpp::Any visitExpr_fct_call(ifccParser::Expr_fct_callContext* ctx) override;
 
     virtual antlrcpp::Any visitExpr_ident(ifccParser::Expr_identContext* ctx) override;
     virtual antlrcpp::Any visitExpr_const(ifccParser::Expr_constContext* ctx) override;
@@ -44,4 +45,5 @@ public:
     inline IR::ControlFlowGraph& getCFG() { return cfg; }
 private:
     IR::ControlFlowGraph cfg;
+    std::map<std::string, std::string> _mapFuncNameToSignature;
 };
