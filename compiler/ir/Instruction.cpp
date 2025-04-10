@@ -29,17 +29,14 @@ std::string Instruction::varToAsm(const Variable& variable) const
 
 void GenFunc::generateAsm(std::ostream& o) const
 {
-    if (!name.compare("main")){
-        o << "\t# prologue:\n";
-        o << "\tpushq\t%rbp # save %rbp on the stack\n";
-        o << "\tmovq\t%rsp, %rbp # define %rbp for the current function\n\n";
-        return;
-    }
     o << "\t# prologue:\n";
     o << "\tpushq\t%rbp # save %rbp on the stack\n";
     o << "\tmovq\t%rsp, %rbp # define %rbp for the current function\n\n";
+    o << "\tsubq\t$" << ((stackSize + 15) / 16) * 16 << ", %rsp # move the stack pointer\n\n";
+    
+    if (!name.compare("main")) return;
 
-    std::vector<std::string> registre = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
+    std::vector<std::string> registre = { "%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d" };
     for (int i = 0; i < varList.size() && i < 6; ++i)
         o << "\tmovl\t" << registre[i] << ", " << varToAsm(varList[i]) << "\n";
 }
@@ -176,6 +173,7 @@ void CompNe::generateAsm(std::ostream& o) const
 
 void Return::generateAsm(std::ostream& o) const
 {
+    o << "\tmovq\t%rbp, %rsp # moves %rbp from the stack\n";
     o << "\tpopq\t%rbp # restore %rbp from the stack\n";
     o << "\tret # return to the caller (here the shell)" << std::endl;
 }

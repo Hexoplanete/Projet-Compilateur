@@ -1,10 +1,10 @@
-// #include <stdio.h>
+#include <stdio.h>
 
-// int getchar() {
-//     return getchar();
-// }
+int getchar() {
+    return getchar();
+}
 
 
-// int main() {
-//     return getchar();
-// }
+int main() {
+    return getchar();
+}

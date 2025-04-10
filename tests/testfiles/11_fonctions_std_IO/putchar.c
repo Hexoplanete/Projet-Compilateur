@@ -3,7 +3,7 @@
 int main() {
     int a;
     int b;
-    char c;
+    int c;
     b = 10;
     c = '9';
     a = putchar(7);

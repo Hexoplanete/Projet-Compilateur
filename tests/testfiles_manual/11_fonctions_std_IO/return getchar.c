@@ -1,3 +1,3 @@
-// int main() {
-//     return getchar();
-// }
+int main() {
+    return getchar();
+}

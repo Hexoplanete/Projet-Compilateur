@@ -48,8 +48,10 @@ public:
     BasicBlock(ControlFlowGraph& cfg, std::string label);
 
     template <typename TInst, typename... IArgs>
-    void addInstruction(IArgs&&... args) {
-        instructions.push_back(std::make_unique<TInst>(*this, args...));
+    TInst& addInstruction(IArgs&&... args) {
+        auto ptr = std::make_unique<TInst>(*this, args...);
+        instructions.push_back(std::move(ptr));
+        return *((TInst*)instructions[instructions.size()-1].get());
     }
     
     void generateAsm(std::ostream& o); // < x86 assembly code generation for this basic block (very simple)

@@ -49,12 +49,16 @@ public:
 
     BasicBlock& getCurrentBlock() const;
     
-    inline void resetMemoryCount() { _memoryTop = 0; _tmpCount = 0; }
+    inline int resetMemoryCount() {
+        int count = _memorySize;
+        _memorySize = 0; _tmpCount = 0;
+        return count;
+    }
 protected:
     int reserveSpace(int size);
     
     std::vector<std::shared_ptr<Variable>> _symbols;
-    int _memoryTop; // to allocate new symbols in the symbol table
+    int _memorySize; // to allocate new symbols in the symbol table
     std::vector<std::map<std::string, Variable*>> _contextSymbolMaps; // part of the symbol table
     std::vector<std::map<std::string, Variable*>> _contextTmpMaps; // part of the temporary symbol table
     int _tmpCount; // just for naming

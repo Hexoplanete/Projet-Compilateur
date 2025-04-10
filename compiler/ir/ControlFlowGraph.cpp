@@ -1,7 +1,7 @@
 #include "ControlFlowGraph.h"
 using namespace IR;
 
-ControlFlowGraph::ControlFlowGraph() : _memoryTop(0), _tmpCount(0) {}
+ControlFlowGraph::ControlFlowGraph() : _memorySize(0), _tmpCount(0) {}
 ControlFlowGraph::~ControlFlowGraph() {}
 
 void ControlFlowGraph::generateAsm(std::ostream& o) const
@@ -73,6 +73,6 @@ BasicBlock& ControlFlowGraph::getCurrentBlock() const
 
 int ControlFlowGraph::reserveSpace(int size)
 {
-    _memoryTop -= size;
-    return _memoryTop;
+    _memorySize += size;
+    return -_memorySize;
 }

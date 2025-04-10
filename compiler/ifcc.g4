@@ -34,7 +34,7 @@ expression:
 	| IDENTIFIER '=' expression								# expr_assign
 	| IDENTIFIER OP_AFF_ADD expression 						# expr_arithmetic_aff_add
 	| IDENTIFIER											# expr_ident
-	| CONST													# expr_const;
+	| (CONST_INT|CONST_CHAR)													# expr_const;
 
 stmt_jump: RETURN expression? ';' # stmt_jump_return;
 
@@ -62,7 +62,8 @@ TYPE: 'int';
 VOID: 'void';
 RETURN: 'return';                   // VARNAME must be after TYPE and RETURN, to avoid rule conflicts.
 IDENTIFIER: [a-zA-Z_][a-zA-Z_0-9]*;    // ex : 'int' must be evaluated as a TYPE to avoid it being evaluated
-CONST: [0-9]+;                      // as a VARNAME (which does not work) thanks to priorities
+CONST_INT: [0-9]+;                      // as a VARNAME (which does not work) thanks to priorities
+CONST_CHAR:'\'' . '\'';                      // as a VARNAME (which does not work) thanks to priorities
 COMMENT: '/*' .*? '*/' -> skip;
 DIRECTIVE: '#' .*? '\n' -> skip;
 WS: [ \t\r\n] -> channel(HIDDEN);

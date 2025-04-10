@@ -13,15 +13,15 @@ antlrcpp::Any CFGVisitor::visitProg(ifccParser::ProgContext* ctx) {
 }
 
 antlrcpp::Any CFGVisitor::visitFunction_def(ifccParser::Function_defContext* ctx) {
-    cfg.resetMemoryCount();
     std::string name(ctx->IDENTIFIER()[0]->getText());
     std::string signature(name);
 
     cfg.pushContext();
 
-    if (!name.compare("main")){
+    IR::GenFunc* genFuncI;
+    if (!name.compare("main")) {
         cfg.createBlock(name);
-        cfg.getCurrentBlock().addInstruction<IR::GenFunc>(name);
+        genFuncI = &cfg.getCurrentBlock().addInstruction<IR::GenFunc>(name);
     }
     else {
         // Liste des types
@@ -50,7 +50,7 @@ antlrcpp::Any CFGVisitor::visitFunction_def(ifccParser::Function_defContext* ctx
         signature += ")";
 
         cfg.createBlock(signature);
-        cfg.getCurrentBlock().addInstruction<IR::GenFunc>(name, varList);
+        genFuncI = &cfg.getCurrentBlock().addInstruction<IR::GenFunc>(name, varList);
     }
 
     // Visiter le corps de la fonction
@@ -58,6 +58,7 @@ antlrcpp::Any CFGVisitor::visitFunction_def(ifccParser::Function_defContext* ctx
         visitStmt(stmt);  // Appelle le visiteur sur chaque statement
     }
     cfg.popContext();
+    genFuncI->stackSize = cfg.resetMemoryCount();
     return 0;
 }
 
@@ -367,8 +368,10 @@ antlrcpp::Any CFGVisitor::visitExpr_ident(ifccParser::Expr_identContext* ctx) {
 }
 
 antlrcpp::Any CFGVisitor::visitExpr_const(ifccParser::Expr_constContext* ctx) {
-    int constValue = std::stoi(ctx->CONST()->getText());
-    cfg.getCurrentBlock().addInstruction<IR::LdConst>(constValue);
+    int value;
+    if (ctx->CONST_INT()) value = std::stoi(ctx->CONST_INT()->getText());
+    else value = (int)ctx->CONST_CHAR()->getText()[1];
+    cfg.getCurrentBlock().addInstruction<IR::LdConst>(value);
     return 0;
 }
 
