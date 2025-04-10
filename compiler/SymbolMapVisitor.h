@@ -13,6 +13,7 @@ public:
     virtual antlrcpp::Any visitProg(ifccParser::ProgContext* ctx) override;
 
     virtual antlrcpp::Any visitFunction_def(ifccParser::Function_defContext* ctx) override;
+    virtual antlrcpp::Any visitExpr_fct_call(ifccParser::Expr_fct_callContext* ctx) override;
     
     virtual antlrcpp::Any visitStmt_block(ifccParser::Stmt_blockContext* ctx) override;
 

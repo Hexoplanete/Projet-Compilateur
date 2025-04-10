@@ -33,8 +33,9 @@ antlrcpp::Any SymbolMapVisitor::visitFunction_def(ifccParser::Function_defContex
     // Liste des identifiants (paramètres)
     auto preIdentifiers = ctx->IDENTIFIER();
     auto identifiers = std::vector<antlr4::tree::TerminalNode *>(preIdentifiers.begin() + 1, preIdentifiers.end());
-    
+
     if (!types.empty() && !identifiers.empty()) {
+        _functionParams[funcName] = identifiers.size();
         int i;
         for (i = 0; i < identifiers.size(); ++i) {
             addVariable(identifiers[i]->getText());
@@ -45,10 +46,31 @@ antlrcpp::Any SymbolMapVisitor::visitFunction_def(ifccParser::Function_defContex
             visitStmt(stmt);  // Appelle le visiteur sur chaque statement
         }
     }
+    else
+        _functionParams[funcName] = 0;
     popContext();
     return 0;
 }
 
+antlrcpp::Any SymbolMapVisitor::visitExpr_fct_call(ifccParser::Expr_fct_callContext* ctx)
+{
+    std::string funcName(ctx->IDENTIFIER()->getText());
+    if (_functions.find(funcName) == _functions.end()) {
+        std::cerr << "error: Function " << funcName << " not defined." << std::endl;
+        exit(1);
+    }
+    auto expre = ctx->expression();
+    int nbParam;
+    if (!expre.empty())
+        nbParam = expre.size();
+    else
+        nbParam = 0;
+    if (nbParam != _functionParams[funcName]) {
+        std::cerr << "error: Function call " << funcName << " with not enough parameters." << std::endl;
+        exit(1);
+    }
+    return 0;
+}
 
 antlrcpp::Any SymbolMapVisitor::visitStmt_block(ifccParser::Stmt_blockContext* ctx)
 {

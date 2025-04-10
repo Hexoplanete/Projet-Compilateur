@@ -221,16 +221,16 @@ def test_compiler(compiler: Compiler, file: str):
     results = RunResult()
 
     asm_name = f"0_asm-{compiler.name}"
-    results.compile = command(f"{compiler.path} {compiler.compile_flags} {file} -o {asm_name}.s", f"0_compile-{compiler.name}.txt")
+    results.compile = command(f'"{compiler.path}" {compiler.compile_flags} "{file}" -o {asm_name}.s', f'0_compile-{compiler.name}.txt')
     if results.compile != 0:
         return results
 
     bin_name = f"1_bin-{compiler.name}"
-    results.link = command(f"gcc {asm_name}.s -o {bin_name}", f"1_link-{compiler.name}.txt")
+    results.link = command(f'gcc {asm_name}.s -o {bin_name}', f'1_link-{compiler.name}.txt')
     if results.link != 0:
         return results
 
-    results.execute = command(f"./{bin_name}", f"2_execute-{compiler.name}.txt")
+    results.execute = command(f'./{bin_name}', f'2_execute-{compiler.name}.txt')
     return results
 
 
