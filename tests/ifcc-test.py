@@ -84,7 +84,7 @@ def parse_args(args: list[str] | None = None):
         "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="Set the logging level (Defaults to 'WARNING')")
     arg_parser.add_argument("tests", metavar="PATH", nargs="+",
                             help="For each path given: if it\"s a file, use this file; if it\"s a directory, use all *.c files in this subtree")
-    arg_parser.add_argument("-c", "--compiler-path", default="ifcc",
+    arg_parser.add_argument("-c", "--compiler-path", default="../ifcc",
                             help="The path to the compiler to test (Defaults to 'ifcc')")
     arg_parser.add_argument("-o", "--output", default=None,
                             help="The output directory for the tests. The csv will have the name '<datetime>-<output>.csv' (Defaults to 'ifcc-test-<compilername>')")
