@@ -58,7 +58,7 @@ OP_INCR: '++' | '--';
 OP_NOT: '!';
 OP_COMP: '<' | '>' | '<=' | '>=';
 OP_EQ: '==' | '!=';
-TYPE: 'int';
+TYPE: 'int' | 'char';
 VOID: 'void';
 RETURN: 'return';                   // VARNAME must be after TYPE and RETURN, to avoid rule conflicts.
 IDENTIFIER: [a-zA-Z_][a-zA-Z_0-9]*;    // ex : 'int' must be evaluated as a TYPE to avoid it being evaluated
