@@ -4,6 +4,7 @@ MAIN=ifcc
 SRC_DIR=compiler
 BUILD_DIR=build
 GEN_DIR=generated
+TEST_DIR=tests
 INCLUDE_DIR=$(ANTLRINC)
 LIBS=$(ANTLRLIB)
 
@@ -22,7 +23,7 @@ default: all
 all: $(MAIN)
 
 test: $(MAIN)
-	cd tests && python3 ifcc-test.py testfiles -c "$(abspath ./ifcc)"
+	cd $(TEST_DIR) && python3 ifcc-test.py testfiles -c "$(abspath ./ifcc)"
 
 $(MAIN): $(OBJECTS)
 	@mkdir -p $(BUILD_DIR)
@@ -58,3 +59,8 @@ clean:
 	rm -r $(BUILD_DIR)
 	rm -r $(SRC_DIR)/$(GEN_DIR)
 	rm $(MAIN)
+
+.PHONY: clean
+cleantest:
+	rm -r $(TEST_DIR)/ifcc-test-${MAIN}
+	rm $(TEST_DIR)/*.csv
