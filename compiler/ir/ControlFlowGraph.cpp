@@ -48,7 +48,7 @@ const Variable& ControlFlowGraph::createSymbolVar(std::string name)
 
 const Variable& ControlFlowGraph::createSymbolVar(std::string name, int address)
 {
-    auto variable = std::make_shared<Variable>(name, reserveSpace(4));
+    auto variable = std::make_shared<Variable>(name, address);
     _symbols.push_back(variable);
     _contextSymbolMaps[_contextSymbolMaps.size() - 1][name] = variable.get();
     return *variable.get();
