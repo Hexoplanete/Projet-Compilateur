@@ -3,7 +3,9 @@
 `ifcc` est un compilateur conçu pour traiter un sous-ensemble du langage C. Le compilateur produit du code assembleur `x86`, mais est capable d'être reciblé sur d'autres architectures dans le futur.
 Le code source est disponible sur le [git Hexoplanète](https://github.com/Hexoplanete/Projet-Compilateur).
 
-La liste des fonctionnalités implémentés est disponible dans le fichier [`Features.md`](Features.md)
+La liste des fonctionnalités implémentés est disponible dans le fichier [`Features.md`](Features.md).
+
+La documentation développeur est disponible dans le fichier [`DevDoc.md`](DevDoc.md).
 
 ## Installation
 Pour générer l'executable `ifcc` utilisez le target make par default.
