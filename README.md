@@ -1,117 +1,56 @@
+# Documentation utilisateur du compilateur IFCC - Hexanome 4213 
 
-### FONCTIONNALITES IMPLEMENTÉES
+`ifcc` est un compilateur conçu pour traiter un sous-ensemble du langage C. Le compilateur produit du code assembleur `x86`, mais est capable d'être reciblé sur d'autres architectures dans le futur.
+Le code source est disponible sur le [git Hexoplanète](https://github.com/Hexoplanete/Projet-Compilateur).
 
-* Type de données de base int
-* Variables
-* Constantes entières mais pas caractères
-* Opérations arithmétiques de base +, -, *
-* Implémentation du modulo
-* Implémentation de la division
-* Affectation multiple
+La liste des fonctionnalités implémentés est disponible dans le fichier [`Features.md`](Features.md)
 
+## Installation
+Pour générer l'executable `ifcc` utilisez le target make par default.
+```bash
+make
+```
+L'executable du compilateur est généré à la racine.
 
-### DESCRIPTION SUCCINTE DU PROGRAMME
+## Utilisation
+Le compilateur permet de générer l'assembleur d'un fichier source `.c` dans un fichier `.s`. Utilisez `gcc` pour générer l'executable final.
+```bash
+./ifcc file.c -o file.s
+gcc file.s -o file
+```
 
-**ETAPE 1 :**
-L’AST est généré par l’analyseur d’ANTLR
+## Suite de test
+Une suite de près de 200 tests est disponible dans le dossier [`tests/`](tests/).
+Le target `test` permet d'executer les tests
+```bash
+make test
+```
+Les résultats des compilations et un résumé d’exécution sont sauvegardés dans le dossier `tests/ifcc-test-ifcc/` et dans un fichier `<date>-ifcc-test-ifcc.csv` respectivement.
 
-**ETAPE 2 :**
-L’AST est visité grâce au visiteur SymbolMapVisitor qui remplit la table des symboles avec les différentes variables, qu’elles soient temporaires ou non.
+Utilisez le ficher [`ifcc-test.py`](tests/ifcc-test.py) directement si vous souhaitez exécutez des tests precis.
+```bash
+python3 tests/ifcc-test-py --help
+```
 
-**ETAPE 3 :**
-La récupération des symboles intermédiaires est faite grâce au visiteur CodeGenVisitor, qui visite l’AST. En fonction des noeuds rencontrés et de la table des symboles, le visiteur génère le code assembleur associé. 
+## Affichage de l'ast
+Le target make `gui` permet d'afficher l'AST généré par la grammaire [`ifcc.g4`](compiler/ifcc.g4).
+```bash
+make gui FILE=<file>
+```
 
+## Nettoyage des fichiers générés
+Utilisez les targets `clean` et `cleantest` pour supprimer les fichiers créés par la compilation et la suite de test.
+```bash
+make clean
+make cleantest
+```
 
-
-### STRUCTURE DES TESTS
-
-Les tests ont été regroupés par thèmes dans le dossier testfiles conformément au sujet du projet. On a donc :
-- 0_invalid_c_prog
-- 1-8_expressions
-- 9_random_decl_var
-- 10_affectations
-- 11_fonctions_std_IO
-- 12_fonctions_param
-- 13_coherence des appels
-- 14_structure_blocs
-- 15_portee_variables
-- 16_if_else_while
-- 17_return_anywhere
-- 18_verif_var_decl
-- 19_verif_var_decl_once
-- 20_verif_var_decl_used
-
-- 32_op_affec_incr_decr
-
-- Dossier non_regression : chaque fois qu'on ajoute une fonctionnalité, cela ne doit pas casser ce qui a déjà été fait
-
-Les tests des fonctions pour les entrées/sorties, qui comportent des appels bloquants sont situés dans un dossier séparé appelé "testfiles_manual".
-
-
-### STRUCTURE DU CODE
-
-Pour compiler, dans le dossier compiler : `make`
-
-Pour supprimer tous les fichiers générés (exécutables): `make clean`
-
-Le programme fonctionne de la manière suivante : 
-1. L'AST (Abstract Syntax Tree) est analysé grammaticalement par le SymbolMapVisitor. Cela va permettre d'établir la table de symboles qui va associer un nom de variable à une adresse mémoire.
-2. L'AST est de nouveau analysé grammaticalement, mais cette fois ci par CodeGenVisitor qui, avec l'aide de la table de symboles, va construire le programme assembleur associé à l'arbre.
-
-Dans la partie 1 : **ANALYSE ET CONSTRUCTION DE LA TABLE DE SYMBOLES**
-- Le programme est visité, les enfants de cette déclaration sont également visités, et ça récursivement pour les enfants.
-- La taille de la variable est déduite en fonction des types dans le cas des déclarations (+ définitions).
-- L'adresse de stockage de la variable est calculée en fonction de la taille déterminée plus tôt.
-- Le nom des variables est extrait du symbole VARNAME, dans le cas où il existe déjà dans la table de symbole, un erreur est renvoyée.
-- Des variables temporaires @tmpX et @tmpY sont crées dans la table de symbole pour être en mesure de gérer les différentes opérations (affectations, division, modulo...)
-
-
-Dans la partie 2 : **CONSTRUCTION DU CODE ASSEMBLEUR**
-- Le programme est visité, dans cette même étape, le prologue est construit, les enfants du programme sont également visités de sorte à ce que le code assembleur puisse être construit, l'épilogue est construit.
-- Pour les affectations de type TYPE IDENTIFIER = EXPRESSION, la partie EXPRESSION est visitée et sa valeur est copiée dans eax, la table de symboles est consultée pour récupérer l'adresse associée à la variable, la valeur d'eax est copiée à l'adresse de la variable (conformément à la table de symboles)
-- Les valeurs CONST sont déchiffrées en valeurs entières
-- Les expressions sont visitées pour déterminer en fonction de l'opération unaire si le signe d'eax doit changer. Dans le cas d'une soustraction, le signe d'eax est modifié ; Dansle cas d'une addition, rien n'est modifié.
-- L'addition et la soustraction sont gérées de la manière suivante :
-    - La valeur de l'expression à gauche de l'expression arithmétique est copiée dans eax
-    - Une nouvelle variable temporaire @tmpX est créée et est ajoutée dans la table de symboles
-    - L'expression de gauche (dans eax) est copiée dans la variable temporaire pour libérer eax
-    - La valeur de l'expression à droite de l'expression arithmétique est copiée dans eax
-    - En fonction de l'opérateur arithmétique, un left + right est effectué ou un left - right dans la variable temporaire @tmpX
-    - Le résultat est copié de la variable temporaire @tmpX dans eax
-
-- Le produit, la division et le modulo sont gérés de la manière suivante :
-    - La valeur de l'expression à gauche de l'expression arithmétique est copiée dans eax
-    - Une nouvelle variable temporaire @tmpX est créée et est ajoutée dans la table de symboles
-    - L'expression de gauche (dans eax) est copiée dans la variable temporaire pour libérer eax
-    - La valeur de l'expression à droite de l'expression arithmétique est copiée dans eax
-    - En fonction de s'il s'agit d'un produit ou d'une division, il faut gérer l'opération différemment.
-
-        Pour le produit : 
-        - On place simplement le résultat de left * right dans eax
-
-        Pour la division :
-        - On crée une variable temporaire @tmpY qu'on ajoute à la map des symboles
-        - L'expression de droite (dans eax) est copiée dans la variable temporaire @tmpY pour libérer eax
-        - L'expression de gauche (dans @tmpX) est copiée dans eax, ce sera le dividende
-        - On effectue la division left / right puis on place le quotient dans eax et le reste dans edx
-
-        Information complémentaire : 
-        Pour la division, le quotien est déjà dans eax tandis que pour le modulo, la valeur dans edx est copiée dans eax.
-
-- L'expression est visiée et est assignée à un IDENTIFIER pour copier sa valeur dans eax, récupère dans la table des symboles la variable correspondante à l'IDENTIFIER, et copie la valeur de l'expression (dans eax) à l'adresse mémoire de la variable
-
-
-
-### DESCRIPTION DE LA GESTION DE PROJET
-
-Le projet est réalisé selon la méthode AGILE et le TDD (Test Driven Development) c’est-à-dire qu'une première version fonctionnelle du projet est rendue à la fin de chaque sprint avec les tests correspondants. On effectuera deux sprints de durée égale (deux semaines de projet).
-
-La répartition des rôles a été faite selon : 
-* L'équipe de développement du programme : Corentin JEANNE, Juliette PIERRE
-* L'équipe de réalisation de fichiers de test : Joris FELZINES, Harold MARTIN
-* Responsable organisationnel et rapport : Marine QUEMENER
-* Scrum master : Justine STEPHAN
-
-
-L'outil de développement est Visual Studio Code et le code est stocké sur GitHub.
-
+## Composition de l'équipe
+| Nom             | Rôle principal                         |
+| --------------- | -------------------------------------- |
+| Justine STEPHAN | Scrum Master                           |
+| Marine QUEMENER | Responsable organisationnel et rapport |
+| Corentin JEANNE | Développement des fonctionnalités      |
+| Juliette PIERRE | Développement des fonctionnalités      |
+| Joris FELZINES  | Ajout des tests                        |
+| Harold MARTIN   | Ajout des tests                        |
